@@ -85,7 +85,7 @@ def generate_audio_transcript(client,audio_path):
 
 class gpt4omini:
     def __init__(self) -> None:
-        self.client=OpenAI(api_key=os.environ["OPENAI_API_KEY"])
+        self.client=OpenAI(api_key=os.environ.get("OPENAI_API_KEY"))
         self.max_trial=3
     def generate_response(self,video_path,prompt,seconds_per_frame=1,audio_support=False):
         base64Frames, audio_path = process_video(video_path, seconds_per_frame=seconds_per_frame)  # Extract 1 frame per second. You can adjust the `seconds_per_frame` parameter to change the sampling rate
