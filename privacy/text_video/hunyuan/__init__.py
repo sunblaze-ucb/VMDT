@@ -1,0 +1,1 @@
+from .model import HunyuanVideo as HunyuanVideo
