@@ -2,13 +2,14 @@
 
 This repo contains the source code of VMDT (Video-Modal DecodingTrust). This research endeavor is designed to help researchers and practitioners better understand the capabilities, limitations, and potential risks involved in deploying these state-of-the-art Video Foundation Models (VFMs). 
 
-
 This benchmark is organized around the following five key perspectives of trustworthiness:
 1. Safety
 2. Hallucination
 3. Fairness
 4. Privacy
 5. Adversarial robustness
+
+This repo supports the evaluation of 7 T2V models and 19 V2T models. To evaluate an additional model, please add its code.
 
 ## Project Structure
 
