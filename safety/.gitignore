@@ -1,0 +1,6 @@
+/tmp
+/out
+.python-version
+__pycache__/
+.env
+/data
