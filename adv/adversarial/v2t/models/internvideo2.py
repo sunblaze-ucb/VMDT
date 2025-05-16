@@ -1,4 +1,5 @@
 from typing import Any, Dict, Tuple
+import os
 import warnings
 import numpy as np
 import torch
@@ -57,6 +58,7 @@ class InternVideo2Chat8B:
         video, _, _ = read_video(video_path, start_pts=start_time, end_pts=end_time, pts_unit='sec', output_format="TCHW")
         video = video.float().div(255)
         return video
+
     
     def select_frames(self, video, num_frames_to_select=8):
         total_frames = video.size(0)
@@ -69,7 +71,7 @@ class InternVideo2Chat8B:
         ], dtype=torch.long)
         
         return video[indices]
-        
+
     def transform_frames(self, frames):
         mean = (0.485, 0.456, 0.406)
         std = (0.229, 0.224, 0.225)
@@ -144,6 +146,7 @@ class InternVideo2Chat8B:
     
     def generate(self, prompt, frames=None, video_path=None, start_time=0, end_time=None, num_frames_to_select=8):
         if video_path is not None:
+            print(f"Loading video from {video_path}")
             video = self.load_video(video_path, start_time, end_time)
             assert video is not None, "Video load failed"
             frames = self.select_frames(video, num_frames_to_select)
@@ -164,9 +167,3 @@ class InternVideo2Chat8B:
             return_history=False,
             generation_config={"do_sample": False},
         )
-        
-if __name__ == "__main__":
-    model = InternVideo2Chat8B(device="cuda:0", dtype="torch.bfloat16")
-    frames = torch.load("v2t_frames/0aec891832114885b0025c7c1800a3d0/frames.pt")
-    output = model.generate("Describe the video.", frames=frames)
-    print(output)
