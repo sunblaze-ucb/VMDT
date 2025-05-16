@@ -1,31 +1,6 @@
 import re
 from typing import Union, List, Optional, Dict, Any
 from pydantic import BaseModel, root_validator
-
-VATEX_VIDEO_DIR = "/ib-scratch/chenguang02/scratch1/cnicholas/mmdt-video/data/vatex/videos"
-CLEVRER_VIDEO_DIR = "/ib-scratch/chenguang02/scratch1/cnicholas/mmdt-video/data/clevrer/video_validation"
-NEPTUNE_VIDEO_DIR = "/ib-scratch/chenguang02/scratch1/cnicholas/mmdt-video/data/neptune/videos"
-
-TASK_TO_DATASET = {
-    "ObjectRecognition": "vatex",
-    "AttributeRecognition": "vatex",
-    "ActionRecognition": "vatex",
-    "Counting": "clevrer",
-    "SpatialUnderstanding": "clevrer",
-    "SceneUnderstanding": "neptune"
-}
-
-def get_video_path(video_id, task_name):
-    dataset = TASK_TO_DATASET[task_name]
-    if dataset == "vatex":
-        return f"{VATEX_VIDEO_DIR}/{video_id}.mp4"
-    elif dataset == "clevrer":
-        # There are 5 directories: video_10000-11000, video_11000-12000, video_12000-13000, video_13000-14000, video_14000-15000. Then inside the dir the video is named video_video_id.mp4
-        return f"{CLEVRER_VIDEO_DIR}/video_{int(video_id/1000)*1000}-{int(video_id/1000)*1000+1000}/video_{video_id}.mp4"
-    elif dataset == "neptune":
-        return f"{NEPTUNE_VIDEO_DIR}/{video_id}.mp4"
-    else:
-        raise ValueError(f"Unknown dataset: {dataset}")
     
 def get_mc_format(question, answer_choices, gt):
     """Returns the full question formatted with multiple choice answers, the answer choices as letters, and the ground truth answer choices as letters."""
@@ -65,21 +40,19 @@ def parse_mc_answer(model_output, answer_choices, choice_letters, one_correct_an
     return ""
 
 class EvaluationResult(BaseModel):
-    clean_response: Optional[str] = None
-    clean_score: Optional[float] = None
+    benign_response: Optional[str] = None
+    benign_score: Optional[float] = None
     adv_response: Optional[str] = None
     adv_score: Optional[float] = None
 
 class V2TInstance(BaseModel):
     id: str
-    source: str
-    video_id: Union[str, int]
-    task: str
+    surrogate: str
+    attack: str
+    benign: str
+    adversarial: str
     question: str
-    answer_choices: List[str]
-    gt: List[str]
-    surrogate_model: Optional[str] = None
-    attack: Optional[str] = None
-    clean_frames_id: Optional[str] = None
-    adv_frames_id: Optional[str] = None
+    choices: List[str]
+    answer: str
+    task: Optional[str] = None
     eval_results: Optional[Dict[str, EvaluationResult]] = {}

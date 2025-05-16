@@ -136,9 +136,3 @@ class VideoLlava:
         output_text = self.processor.batch_decode(outputs, skip_special_tokens=True, clean_up_tokenization_spaces=True)[0].split("ASSISTANT:")[1].strip()
         
         return output_text
-    
-if __name__ == "__main__":
-    model = VideoLlava(device="cuda:0", dtype="torch.bfloat16")
-    frames = torch.load("v2t_frames/0aec891832114885b0025c7c1800a3d0/frames.pt")
-    output = model.generate("Describe the video.", frames=frames)
-    print(output)

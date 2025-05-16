@@ -368,9 +368,3 @@ class VideoChat2:
         output_text = output_text.split('</s>')[0]
         
         return output_text
-    
-if __name__ == "__main__":
-    model = VideoChat2(device="cuda:0", dtype="torch.bfloat16")
-    frames = torch.load("v2t_frames/0aec891832114885b0025c7c1800a3d0/frames.pt")
-    output = model.generate("Describe the video.", frames=frames)
-    print(output)
