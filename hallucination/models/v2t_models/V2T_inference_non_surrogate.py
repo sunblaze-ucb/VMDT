@@ -1,31 +1,4 @@
-"""Given a json file with prompts and video paths, run the prompts on various V2T models and save the results to a json file.
-
-JSON example:
-{
-        "question": "What is the man wearing while picking apples in the orchard?",
-        "gt": [
-            "wearing black hoodie and trousers"
-        ],
-        "answer_choices": [
-            "wearing black hoodie and trousers",
-            "wearing a white shirt and shorts",
-            "wearing a red jacket and jeans",
-            "wearing a brown coat and overalls",
-            "wearing a blue sweater and khakis"
-        ],
-        "task_name": "AttributeRecognition",
-        "dataset": "vatex",
-        "video_id": "m2_qmRnjICE_000017_000027"
-},
-
-We will implement models in various files which we import. Each model has an inference function that takes a prompt and video_path and returns a response.
-
-The videos will be saved as mp4 files, with a dir specified by a unique id. Each video will be saved as video.mp4, e.g., videos/2021-08-31_14-30-00/uuid1/video.mp4. Later, frames and other information can be saved in the same directory that are unique to the video.
-
-"""
-
 import json
-from datasets import load_dataset
 import os
 import argparse
 from datetime import datetime
@@ -40,21 +13,6 @@ import os
 import decord
 import re
 import sys
-# from diskcache import Cache
-# class AsyncCache:
-#     def __init__(self, cache_path):
-#         self._cache = Cache(cache_path)
-    
-#     async def get(self, key):
-#         return await asyncio.to_thread(self._cache.get, key)
-    
-#     async def set(self, key, value, expire=None):
-#         return await asyncio.to_thread(self._cache.set, key, value, expire=expire)
-
-# async_cache = AsyncCache("./async_cache")
-
-# sys.path.append(os.path.dirname(os.path.abspath(__file__)))  # bc I cannot figure out the imports.
-# print(f"sys.path: {sys.path}")
 
 # Define a directory for caching
 cache_dir = "./cache"
@@ -155,23 +113,8 @@ def generate_cached_output(question, video_path, model_name, model):
     Generate the model output with caching based only on question, video_path, and model_name.
     The model is ignored in the cache key bc it is a complex object.
     """
-    # Create a unique cache key using a hash of the inputs
-    # cache_key = hashlib.sha256(
-    #     json.dumps({
-    #         "question": question,
-    #         "video_path": video_path,
-    #         "model_name": model_name
-    #     }, sort_keys=True).encode()
-    # ).hexdigest()
-
-    # # Check if the result is already in the cache
-    # cached_response = await async_cache.get(cache_key)
-    # if cached_response is not None:
-    #     print("Cache hit")
-    #     return cached_response
+  
     output = model.generate(video_path=video_path, question=question)
-    # Save the result to the cache -- no expiration so it always stays in the cache
-    # await async_cache.set(cache_key, out, expire=None)
     return output
 
 @memory.cache(ignore=["model"])
@@ -184,7 +127,10 @@ def generate_cached_output_retry2(question, video_path, model_name, model):
     output = model.generate(video_path=video_path, question=question)
     return output
 
-# Removed load_prompts; using HuggingFace dataset directly in main
+def load_prompts(prompt_file):
+    with open(prompt_file) as f:
+        data = json.load(f)
+    return data
 
 def update_progress(progress_queue, total_length, current_model_status):
     """
@@ -232,14 +178,11 @@ def run_prompt_on_gpu_for_model(data_part, gpu_id, model_class, videos_dir, prog
     results = []
     for d in tqdm(data_part, desc=f"Running model {model_class} on GPU {gpu_id}", unit="instance"):
         print(f"Running model {model_class} for scenario {d['scenario_name']} on prompt {d['question']} on GPU {gpu_id}")
-        # curr_video_dir = os.path.join(videos_dir, f"{uuid.uuid4()}")
-        # os.makedirs(curr_video_dir, exist_ok=True)
-        # video_path = os.path.join(curr_video_dir, f"video.mp4")
 
         # Format question and run inference.
         question, all_letters, gt_letters = get_mc_format(d["question"], d["answer_choices"], d["gt"])
         # Check if path is valid
-        video_path = os.path.join('/ib-scratch/chenguang02/scratch1/cnicholas/mmdt-video/data/', d["video_path"])
+        video_path = d['video_path']
         if not os.path.exists(video_path):
             print(f"Video path {video_path} does not exist.")
             continue
@@ -270,10 +213,6 @@ def run_prompt_on_gpu_for_model(data_part, gpu_id, model_class, videos_dir, prog
         }
         d["results"] = {model_class: output_dict} if "results" not in d else {**d["results"], model_class: output_dict}
         results.append(d)
-
-        # save json in same directory as video
-        # with open(os.path.join(curr_video_dir, "info.json"), "w") as f:
-        #     json.dump({**d, "model": model.model_name}, f, indent=4)
 
         # Update shared progress queue
         if progress_queue is not None:
@@ -354,20 +293,10 @@ def save_results(results, output_file):
     with open(output_file, "w") as f:
         json.dump(results, f, indent=4)
 
-def main(dataset_data, output_file, videos_dir, models, scenarios, num_gpus, models_per_gpu, num_instances_per_task, num_instances_per_task_scenario):
-    # dataset_data: list of examples loaded from the HuggingFace dataset
-    # Remove entries without a question
-    original_data = [d for d in dataset_data if d.get("question")]
-    # Filter by scenario names if provided
-    if scenarios:
-        original_data = [d for d in original_data if d.get("scenario_name") in scenarios]
-    # Do by dataset parsing too. Specifically, for neptune, discard all prompts with dataset=="neptune" and length < len_threshold=90 seconds.
-    # with open("../data/neptune/video_lengths.json") as f:
-    #     video_lengths = json.load(f)
-    # len_threshold = 90
-    # print(f"Before neptune length filtering: {len(original_data)}")
-    # original_data = [d for d in original_data if (d["dataset"] != "neptune" or (d["dataset"] == "neptune" and video_lengths[d["video_id"]] <= len_threshold))]
-    # print(f"After neptune length filtering: {len(original_data)}")
+def main(prompt_file, output_file, videos_dir, models, num_gpus, models_per_gpu, num_instances_per_task, num_instances_per_task_scenario):
+    original_data = load_prompts(prompt_file)
+    original_data = [d for d in original_data if (d["scenario_name"] in ["NaturalSelection", "Counterfactual", "Misleading", "Distraction"])]  # bc some prompts may be empty or null, e.g., OCR.
+
     # Get unique tasks
     tasks = set(d["task_name"] for d in original_data)
     # This will hold your final dataset
@@ -421,50 +350,25 @@ def main(dataset_data, output_file, videos_dir, models, scenarios, num_gpus, mod
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
-    parser.add_argument(
-        "--scenarios", type=str, nargs='+',
-        help="List of scenarios to run. Must be one or more of: NaturalSelection, Misleading, Distraction, Counterfactual"
-    )
-    parser.add_argument(
-        "--models", type=str, nargs='+',
-        help="List of model names to run. Must be one or more of: " + ", ".join(MODELS.keys())
-    )
+    parser.add_argument("--prompt_file", type=str, help="The file with the prompts to run.")
+    parser.add_argument("--models", type=str, nargs="+", help="List of model names to run. Must be one or more of: " + ", ".join(MODELS.keys()))
+    # parser.add_argument("--parallel", action="store_true", help="Run the models in parallel on multiple GPUs.")
     parser.add_argument("--num_gpus", type=int, default=1, help="Number of GPUs to use.")
     parser.add_argument("--models_per_gpu", type=int, default=2, help="Number of models to run on each GPU.")
     parser.add_argument("--num_instances_per_task", type=int, default=-1, help="Max number of instances to run for each task.")
     parser.add_argument("--num_instances_per_task_scenario", type=int, default=-1, help="Max number of instances to run for each scenario per task.")
     args = parser.parse_args()
+    # Example usage: python V2T_inference_non_surrogate.py --prompt_file ../data/v2t_final/V2T_final_prompts_pre_manual.json --models qwen_vl2 --num_gpus 1 --models_per_gpu 1 --num_instances_per_task 1 --num_instances_per_task_scenario -1
     # Ensure the models are valid
     for model in args.models:
         if model not in MODELS:
             raise ValueError(f"Model {model} not found. Must be one of: {', '.join(MODELS.keys())}")
-    print(f"Running models: {args.models} on scenarios: {args.scenarios}")
+    print(f"Running models: {args.models}")
     current_datetime = datetime.now().strftime('%Y-%m-%d_%H-%M-%S')
     os.makedirs(os.path.join("output_files", current_datetime), exist_ok=True)
-    # Define output file and video directory
-    output_file = os.path.join("output_files", current_datetime, "final_results.json")
+    output_file = os.path.join("output_files", current_datetime, os.path.splitext(os.path.basename(args.prompt_file))[0] + "_final_results.json")
     print(f"Saving results to {output_file}")
     videos_dir = f"text/{current_datetime}"
     os.makedirs(videos_dir, exist_ok=True)
-    # Load HuggingFace dataset for V2T tasks
-    dataset_dict = load_dataset("mmfm-trust/V2T", name="hallucination")
-    # Build dataset list by scenario splits
-    scenarios = args.scenarios if args.scenarios else list(dataset_dict.keys())
-    dataset_list = []
-    for sc in scenarios:
-        if sc not in dataset_dict:
-            raise ValueError(f"Scenario {sc} not found; available: {list(dataset_dict.keys())}")
-        dataset_list.extend(list(dataset_dict[sc]))
-    # Run main processing on the filtered dataset
-    main(
-        dataset_list,
-        output_file,
-        videos_dir,
-        args.models,
-        scenarios,
-        args.num_gpus,
-        args.models_per_gpu,
-        args.num_instances_per_task,
-        args.num_instances_per_task_scenario,
-    )
+    main(args.prompt_file, output_file, videos_dir, args.models, args.num_gpus, args.models_per_gpu, args.num_instances_per_task, args.num_instances_per_task_scenario)
     print(f"Saved results to {output_file}")

@@ -563,5 +563,5 @@ class QwenVLClient:
 
 # if __name__ == "__main__":
 #     client = Qwen2VLClient("Qwen/Qwen2-VL-7B-Instruct")
-#     output = client.generate("/ib-scratch/chenguang02/scratch1/cnicholas/auxiliary-mmdt-video/video-safety-benchmark/models/v2t_models/test_dis.mp4", "What is the video about?")
+#     output = client.generate("test_dis.mp4", "What is the video about?")
 #     print(output)
