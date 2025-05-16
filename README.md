@@ -14,6 +14,10 @@ This benchmark is organized around the following five key perspectives of trustw
 
 This project is structured around subdirectories dedicated to each area of trustworthiness. Each subdir includes scripts, data, and a dedicated README for easy comprehension.
 
+## Dataset 
+
+Our dataset is available at https://huggingface.co/datasets/mmfm-trust/T2V, https://huggingface.co/datasets/mmfm-trust/V2T 
+
 ## Getting Started
 
 ### Clone the repository
@@ -21,3 +25,5 @@ This project is structured around subdirectories dedicated to each area of trust
 ```bash
 git clone https://github.com/sunblaze-ucb/VMDT.git 
 ```
+
+Each folder describes the instruction to evaluate model.
