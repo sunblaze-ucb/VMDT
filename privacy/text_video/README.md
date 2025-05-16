@@ -1,19 +1,4 @@
 # Video Generation Models
-## Model List
-
-Video parameters are from their official recommendations.
-
-| Model                                                               | Duration   | FPS    | Res.     | Gen. time (H100) |
-| ------------------------------------------------------------------- | ---------- | ------ | -------- | ---------------- |
-| [VideoCrafter2](https://github.com/AILab-CVC/VideoCrafter)          | 16f (1.6s) | 10 fps | 512x320  | ~100s            |
-| [HunyuanVideo (TBD, as of now, we can skip it) ](https://github.com/Tencent/HunyuanVideo)             | 129f (5s)  | 24 fps | 1280x720 | ~30min           |
-|                                                                     | 129f (5s)  | 24 fps | 832x624  | ~10min           |
-|                                                                     |            |        |          | ~6min (2 GPUs)   |
-| [~~CogVideoX1.5-5B~~](https://huggingface.co/THUDM/CogVideoX1.5-5B) | 81f (5s)   | 16 fps | 1360x768 | ~3h????          |
-| [~~CogVideoX-5B~~](https://huggingface.co/THUDM/CogVideoX-5b)           | 49f (6s)   | 8 fps  | 720x480  | ~5min            |
-| [Vchitect-2.0-2B](https://github.com/Vchitect/Vchitect-2.0)         | 40f (5s)   | 8 fps  | 768x432  | ~2min            |
-| [OpenSora-1.2](https://github.com/hpcaitech/Open-Sora)              | 102f (4s)  | 24 fps | 1280x720 | ~3min            |
-|                                                                     | 204f (8s)  | 24 fps | 1280x720 | ~6min            |
 
 ## Installation
 conda environment for reference:
