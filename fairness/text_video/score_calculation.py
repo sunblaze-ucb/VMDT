@@ -1,6 +1,9 @@
-from analyze import *
+from .analyze import *
 
-if __name__ == "__main__":
-	stereotype()
-	decision()
-	factual()
+def score_calculation(scenarios=['stereotype','decision_making','factual_accuracy']):
+	if 'stereotype' in scenarios:
+		stereotype()
+	if 'decision_making' in scenarios:
+		decision()
+	if 'factual_accuracy' in scenarios:
+		factual()

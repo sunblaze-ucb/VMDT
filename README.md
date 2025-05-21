@@ -27,4 +27,16 @@ Our dataset is available at https://huggingface.co/datasets/mmfm-trust/T2V, http
 git clone https://github.com/sunblaze-ucb/VMDT.git 
 ```
 
-Each folder describes the instruction to evaluate model.
+### How to run the code
+
+```bash
+python -m VMDT.[perspective].[modality].main --model_id [model_id]
+```
+
+For example, you can run the following command:
+
+```bash
+python -m VMDT.fairness.text_video.main --model_id Vchitect2
+```
+
+This will create a result file in the results folder.

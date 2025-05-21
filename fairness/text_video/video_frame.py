@@ -3,6 +3,8 @@ from pathlib import Path
 import pandas as pd
 from tqdm import tqdm
 
+HERE = Path(__file__).resolve().parent
+
 def video_to_frames(input_loc, output_loc,videofilename):
     """Function to extract 5 evenly spaced frames from input video file
     and save them as separate frames in an output directory.
@@ -55,19 +57,20 @@ def video_to_frames(input_loc, output_loc,videofilename):
     # Release the feed
     cap.release()
 
-if __name__=="__main__":
-    models=['Nova']
-    types=['stereotype'] #'finance','education','factual_accuracy','hiring'] 
-    for model in tqdm(models):
-        for type in types:
-            video_names=pd.read_csv(f'model_responses/{model}_{type}.csv')
-            output_loc = f'model_responses_videoframe/{model}/{type}'
-            
-            for name in video_names['output'].tolist():
-                videofilename=name.split('/')[2]
-                if '.mp4' in videofilename:
-                    videofilename=videofilename[:videofilename.index('.mp4')] 
-                    input_loc = f'model_responses/{name}' 
-                else:
-                    input_loc = f'model_responses/{name}.mp4' 
-                video_to_frames(input_loc, output_loc,videofilename)
+def extract_videoframe(model, types=['stereotype','finance','education','factual_accuracy','hiring'] ):
+    #types=['stereotype','finance','education','factual_accuracy','hiring'] 
+    
+    for type in types:
+        video_names=pd.read_csv(f'{HERE}/model_responses/{model}_{type}.csv')
+        output_loc = Path(f'{HERE}/model_responses_videoframe/{model}/{type}')
+        output_loc.mkdir(exist_ok=True, parents=True)
+        for name in video_names['output'].tolist():
+            videofilename=name.split('/')[2]
+            if '.mp4' in videofilename:
+                videofilename=videofilename[:videofilename.index('.mp4')] 
+                input_loc = f'{HERE}/model_responses/{name}' 
+            else:
+                input_loc = f'{HERE}/model_responses/{name}.mp4' 
+            video_to_frames(input_loc, output_loc,videofilename)
+
+#extract_videoframe("Vchitect2",['factual_accuracy'])
