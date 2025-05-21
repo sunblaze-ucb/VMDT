@@ -19,9 +19,9 @@ class StaticCredentialProvider(CredentialProvider):
 class s3_download: 
     def __init__(self) -> None:  
         session = boto3.Session()
-        credentials = StaticCredentialProvider(access_key=os.environ['ACCESS_KEY'], secret_key=os.environ['SECRET_KEY'])
+        credentials = StaticCredentialProvider(access_key=os.environ['AWS_ACCESS_KEY_ID'], secret_key=os.environ['AWS_SECRET_ACCESS_KEY'])
         self.s3 = session.client('s3',aws_access_key_id=credentials._access_key,aws_secret_access_key=credentials._secret_key)
-        self.BUCKET_NAME = 'bedrock-video-generation-us-east-1-1p02b2' # replace with your bucket name
+        self.BUCKET_NAME = os.getenv("AWS_S3_BUCKET")
         
     def download_files(self,s3_filename, output_filename):
         
@@ -39,15 +39,16 @@ class s3_download:
         return False
 
 class Nova_reel(T2VBaseModel):
-    def load_model(self):
+    def load_model(self, **kwargs):
         # Create the Bedrock Runtime client.
         session = boto3.Session()
-        credentials = StaticCredentialProvider(access_key=os.environ['ACCESS_KEY'], secret_key=os.environ['SECRET_KEY'])
-
+        credentials = StaticCredentialProvider(access_key=os.environ['AWS_ACCESS_KEY_ID'], secret_key=os.environ['AWS_SECRET_ACCESS_KEY'])
+        region = kwargs.get("region", "us-east-1")
+        self.bucket = os.getenv("AWS_S3_BUCKET")
         # Create the client with the custom session and credentials
         self.bedrock_runtime = session.client(
             service_name='bedrock-runtime',
-            region_name='us-east-1',  # Replace with your desired region
+            region_name=region,  # Replace with your desired region
             aws_access_key_id=credentials._access_key,
             aws_secret_access_key=credentials._secret_key
         )
@@ -78,13 +79,13 @@ class Nova_reel(T2VBaseModel):
                             modelInput=model_input,
                             outputDataConfig={
                                 "s3OutputDataConfig": {
-                                    "s3Uri": "s3://bedrock-video-generation-us-east-1-1p02b2"
+                                    "s3Uri": f"s3://{self.bucket}"
                                 }
                             }
                         )
                         invocation_arn = invocation["invocationArn"]
                         job_id = invocation_arn.split("/")[-1]
-                        s3_location = f"s3://bedrock-video-generation-us-east-1-1p02b2/{job_id}"
+                        s3_location = f"s3://{self.bucket}/{job_id}"
                     
                     time.sleep(60)
                     while True:

@@ -45,5 +45,5 @@ Currently, this repo currently supports the following modality and model_id:
 
 ```bash
 text_video: ['Nova', 'Pika', 'Luma', 'OpenSora1.2', 'Vchitect2', 'VideoCrafter2', 'CogVideoX-5B']
-video_text: []
+video_text: ["Qwen2-VL-7B", "Qwen2.5-VL-3B", "Qwen2.5-VL-7B", "Qwen2.5-VL-72B", "InternVL2.5-1B", "InternVL2.5-2B", "InternVL2.5-4B", "InternVL2.5-8B", "InternVL2.5-26B", "InternVL2.5-38B", "InternVL2.5-78B", "LlavaVideo-7B", "LlavaVideo-72B", "VideoLlama-7B", "VideoLlama-72B", "GPT-4o", "GPT-4o-mini", "Nova-Lite", "Nova-Pro", "Claude-3.5-Sonnet"]
 ```

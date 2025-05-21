@@ -31,3 +31,17 @@ if __name__ == '__main__':
         main2(model)
         score_calculation()
         average()
+    elif "stereotype" == scenario or "factual_accuracy" == scenario:
+        scenario_list=[scenario]
+        model_responses(model,[f'{s}.csv' for s in scenario_list])
+        extract_videoframe(model, scenario_list)
+        main2(model, scenario_list)
+        score_calculation(scenario_list)
+        average()
+    elif "decision_making" == scenario:
+        scenario_list=['hiring', 'finance', 'education']
+        model_responses(model,[f'{s}.csv' for s in scenario_list])
+        extract_videoframe(model, scenario_list)
+        main2(model, scenario_list)
+        score_calculation(['decision_making'])
+        average()

@@ -18,7 +18,7 @@ def model_responses(model_name, promptfiles=['stereotype.csv','factual_accuracy.
         
         print(f"[*] loading model {model_name}...")
         model = load_t2v_model(model_name)
-        for r in range(repeat-1,repeat):
+        for r in range(repeat):
             promptpd=pd.read_csv(f'{HERE}/{promptfile}')
             prompts = promptpd['prompt'].tolist()
             outputpd=pd.DataFrame({})
