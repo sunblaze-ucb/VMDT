@@ -136,5 +136,3 @@ def model_responses(model_name, scenarios=['stereotype','decision_making','factu
 
     if 'factual_accuracy' in scenarios:
         factual_accuracy(model_name)
-
-model_responses("InternVL2.5-1B",['stereotype'])
