@@ -41,6 +41,7 @@ For example, you can run the following command:
 
 ```bash
 python -m VMDT.fairness.text_video.main --model_id Vchitect2
+python -m VMDT.fairness.video_text.main --model_id InternVL2.5-1B
 ```
 
 This will create a result file in the results folder.
