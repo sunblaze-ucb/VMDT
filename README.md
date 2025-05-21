@@ -40,3 +40,7 @@ python -m VMDT.fairness.text_video.main --model_id Vchitect2
 ```
 
 This will create a result file in the results folder.
+
+Currently, this repo supports the following modality and model_id: 
+
+text_video: ['Nova','Pika','Luma','OpenSora1.2','Vchitect2','VideoCrafter2','CogVideoX-5B']
