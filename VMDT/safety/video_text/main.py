@@ -4,7 +4,7 @@ from pathlib import Path
 
 from .v2t_eval import main
 
-RESULT_DIR = Path(__file__).parents[2].absolute() / "results"
+RESULT_DIR = Path(__file__).parents[3].absolute() / "results"
 
 if __name__ == "__main__":
     assert RESULT_DIR.exists(), f"RESULT_DIR {RESULT_DIR} does not exist"
