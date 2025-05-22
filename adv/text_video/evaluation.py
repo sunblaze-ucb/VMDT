@@ -7,10 +7,14 @@ import cv2
 import numpy as np
 from tqdm import tqdm
 from pydantic import BaseModel
+from openai import AsyncOpenAI
 
-from adversarial.common.utils import read_jsonl, write_jsonl, set_seed
-from adversarial.t2v.t2v_utils import T2VInstance, EvaluationResult
-from adversarial.common.openai_client import async_call_openai
+from VMDT.adv.common.utils import read_jsonl, write_jsonl, set_seed
+from VMDT.adv.text_video.t2v_utils import T2VInstance, EvaluationResult
+from VMDT.adv.common.openai_client import async_call_openai
+
+
+client = AsyncOpenAI()
 
 def load_frames_in_base64(video_path, n_frames):
     video = cv2.VideoCapture(video_path)
@@ -52,7 +56,7 @@ def construct_messages(instance, base64_frames):
         },
     ]
 
-async def run_evaluation(instance, model, benign, adversarial, n_frames, semaphore):
+async def run_evaluation(client, instance, model, benign, adversarial, n_frames, semaphore):
     async with semaphore:
         
         eval_result = instance.eval_results[model]
@@ -62,8 +66,9 @@ async def run_evaluation(instance, model, benign, adversarial, n_frames, semapho
                 benign_frames = load_frames_in_base64(eval_result.benign_vid_id, n_frames)
                 messages = construct_messages(instance, benign_frames)
                 response = await async_call_openai(
+                    client=client,
                     messages=messages,
-                    model="gpt-4o-mini-2024-07-18",
+                    model=args.eval_model,
                     system_prompt=None,
                     response_format=CallOutput,
                     max_tokens=4096,
@@ -81,8 +86,9 @@ async def run_evaluation(instance, model, benign, adversarial, n_frames, semapho
                 adv_frames = load_frames_in_base64(eval_result.adv_vid_id, n_frames)
                 messages = construct_messages(instance, adv_frames)
                 response = await async_call_openai(
+                    client=client,
                     messages=messages,
-                    model="gpt-4o-mini-2024-07-18",
+                    model=args.eval_model,
                     system_prompt=None,
                     response_format=CallOutput,
                     max_tokens=4096,
@@ -116,6 +122,7 @@ if __name__ == "__main__":
     parser.add_argument("--input_path", type=str, required=True)
     parser.add_argument("--output_path", type=str, required=True)
     parser.add_argument("--model", type=str, required=True)
+    parser.add_argument("--eval_model", type=str, required=True)
     parser.add_argument("--benign", action="store_true")
     parser.add_argument("--adversarial", action="store_true")
     parser.add_argument("--n_frames", type=int, default=5)
@@ -124,29 +131,31 @@ if __name__ == "__main__":
     args = parser.parse_args()
     assert args.benign or args.adversarial, "Must specify at least one of --benign or --adversarial"
     set_seed(args.seed)
+
+    client = AsyncOpenAI(base_url="https://api.openai.com/v1" if args.eval_model.startswith("gpt") else "http://localhost:8000/v1")
     
     data = read_jsonl(args.input_path)
     data = [T2VInstance.parse_obj(d) for d in data]
     
-    instances = asyncio.run(run_evaluations(data, args.model, args.benign, args.adversarial, args.n_frames, args.concurrency))
+    instances = asyncio.run(run_evaluations(client, data, args.model, args.benign, args.adversarial, args.n_frames, args.concurrency))
+
+    write_jsonl([instance.model_dump() for instance in instances], args.output_path)
     
     # Calculate accuracies
-    benign_scores = []
-    adv_scores = []
-    for instance in instances:
-        if args.model in instance.eval_results:
-            result = instance.eval_results[args.model]
-            if args.benign and result.benign_score is not None:
-                benign_scores.append(result.benign_score)
-            if args.adversarial and result.adv_score is not None:
-                adv_scores.append(result.adv_score)
+    # benign_scores = []
+    # adv_scores = []
+    # for instance in instances:
+    #     if args.model in instance.eval_results:
+    #         result = instance.eval_results[args.model]
+    #         if args.benign and result.benign_score is not None:
+    #             benign_scores.append(result.benign_score)
+    #         if args.adversarial and result.adv_score is not None:
+    #             adv_scores.append(result.adv_score)
     
-    if args.benign and benign_scores:
-        benign_accuracy = sum(benign_scores) / len(benign_scores)
-        print(f"\nBenign Accuracy: {benign_accuracy:.4f}")
+    # if args.benign and benign_scores:
+    #     benign_accuracy = sum(benign_scores) / len(benign_scores)
+    #     print(f"\nBenign Accuracy: {benign_accuracy:.4f}")
     
-    if args.adversarial and adv_scores:
-        adv_accuracy = sum(adv_scores) / len(adv_scores)
-        print(f"Adversarial Accuracy: {adv_accuracy:.4f}")
-    
-    write_jsonl([instance.model_dump() for instance in instances], args.output_path)
+    # if args.adversarial and adv_scores:
+    #     adv_accuracy = sum(adv_scores) / len(adv_scores)
+    #     print(f"Adversarial Accuracy: {adv_accuracy:.4f}")

@@ -10,8 +10,6 @@ from openai.lib._parsing._completions import type_to_response_format_param
 
 load_dotenv(find_dotenv())
 
-client = AsyncOpenAI()
-
 class AsyncCache:
     def __init__(self, cache_path):
         self._cache = Cache(cache_path)
@@ -24,11 +22,12 @@ class AsyncCache:
 
 async_cache = AsyncCache("./async_cache")
 
-async def async_call_openai(messages, model, system_prompt, response_format, max_tokens, temperature):
+async def async_call_openai(client, messages, model, system_prompt, response_format, max_tokens, temperature):
     """
     Makes an asynchronous OpenAI API call with caching.
 
     Args:
+        client (AsyncOpenAI): OpenAI client.
         messages (list): List of messages for the chat completion.
         model (str): Model to use.
         system_prompt (str): System prompt for the model.

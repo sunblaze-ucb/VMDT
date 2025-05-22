@@ -6,13 +6,15 @@ import argparse
 import time
 import gc
 from multiprocessing import Pool
+from pathlib import Path
 
 import torch.multiprocessing as mp
 import torch
 from datasets import load_dataset, concatenate_datasets
 
-from adversarial.common.utils import read_jsonl, write_jsonl, set_seed, gen_id
-from adversarial.t2v.t2v_utils import T2VInstance, EvaluationResult
+from VMDT.adv.common.utils import read_jsonl, write_jsonl, set_seed, gen_id
+from VMDT.adv.text_video.t2v_utils import T2VInstance, EvaluationResult
+from VMDT.models.t2v_models import load_t2v_model
 
 def run_prompt_on_gpu_for_model(data_part, gpu_id, model_name, videos_dir):
     """
@@ -20,23 +22,10 @@ def run_prompt_on_gpu_for_model(data_part, gpu_id, model_name, videos_dir):
     """
     
     torch.cuda.set_device(gpu_id)
-    
-    if model_name == "CogVideoX-2b":
-        from adversarial.t2v.models.cogvideox import CogVideoX
-        model = CogVideoX("2b", device=f"cuda:{gpu_id}")
-    elif model_name == "CogVideoX-5b":
-        from adversarial.t2v.models.cogvideox import CogVideoX
-        model = CogVideoX("5b", device=f"cuda:{gpu_id}")
-    elif model_name == "mochi-1-preview":
-        from adversarial.t2v.models.mochi import Mochi
-        model = Mochi(device=f"cuda:{gpu_id}")
-    elif model_name in ["VideoCrafter2", "HunyuanVideo", "Vchitect2", "OpenSora1.2", "Luma", "Nova_reel", "Pika"]:
-        from adversarial.common.video_safety_benchmark.models import load_t2v_model
-        model = load_t2v_model(model_name)
-    else:
-        raise ValueError(f"Model {model_name} not found")
 
-    video_outputs = model.generate_videos(data_part, videos_dir)
+    model = load_t2v_model(model_name)
+
+    video_outputs = model.generate_videos(data_part, Path(videos_dir))
     
     return video_outputs
 
@@ -99,7 +88,6 @@ def main(args):
         adv_vid_id = str(video_outputs[adv_vid_index].video_path) if args.adversarial else None
         
         data_index = i//2 if c else i
-        # data[data_index].id = gen_id() # give each instance a new unique ID
         data[data_index].eval_results.setdefault(args.model, EvaluationResult())
         
         result = data[data_index].eval_results[args.model]
