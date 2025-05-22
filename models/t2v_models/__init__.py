@@ -7,7 +7,7 @@ from .vchitect2 import Vchitect2
 from .luma import Luma
 from .pika import Pika
 from .nova_reel import Nova_reel
-#from .opensora import OpenSora
+from .opensora import OpenSora
 
 providers: dict[T2VModelName, type[T2VBaseModel]] = {
     T2VModelName.VideoCrafter2: VideoCrafter,
@@ -17,8 +17,8 @@ providers: dict[T2VModelName, type[T2VBaseModel]] = {
     T2VModelName.Vchitect2: Vchitect2,
     T2VModelName.Luma: Luma,
     T2VModelName.Pika: Pika,
-    T2VModelName.Nova: Nova_reel
-    #T2VModelName.OpenSora1_2: OpenSora,
+    T2VModelName.Nova: Nova_reel,
+    T2VModelName.OpenSora1_2: OpenSora,
 }
 
 t2v_model_list = list(providers.keys())
