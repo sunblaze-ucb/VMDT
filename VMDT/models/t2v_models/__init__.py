@@ -1,5 +1,4 @@
 from .base import T2VBaseModel
-from .hunyuan import HunyuanVideo
 from .model_name import T2VModelName
 from .video_crafter import VideoCrafter
 from .cogvideox import CogVideoX
@@ -11,8 +10,6 @@ from .opensora import OpenSora
 
 providers: dict[T2VModelName, type[T2VBaseModel]] = {
     T2VModelName.VideoCrafter2: VideoCrafter,
-    T2VModelName.HunyuanVideo: HunyuanVideo,
-    # T2VModelName.CogVideoX1_5_5B: CogVideoX, # diabled due to bugs
     T2VModelName.CogVideoX_5B: CogVideoX,
     T2VModelName.Vchitect2: Vchitect2,
     T2VModelName.Luma: Luma,

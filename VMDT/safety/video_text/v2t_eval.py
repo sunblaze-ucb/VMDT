@@ -230,7 +230,7 @@ def load_data(data_dir: Path) -> list[V2TData]:
             ret.append(
                 V2TData(
                     id=itm["id"],
-                    video_path=data_dir / itm["video_path"],
+                    video_path=data_dir / "safety" / itm["video_path"],
                     video_content=itm["video_content"],
                     prompt=itm["prompt"],
                     redteaming=split,
@@ -272,14 +272,21 @@ async def main(raw_args: list[str] | None = None):
             model = load_v2t_model(model_name)
 
             print(f"[*] Generating texts for {model_name}...")
-            await eval_one_model(model_out_dir, model, v2t_data_list)
+            await eval_one_model(
+                model_out_dir, model, v2t_data_list, batch_size=args.model_batch_size
+            )
 
     if args.run_judge:
         for model_name in args.models:
             torch.cuda.empty_cache()
             model_out_dir = args.out_dir / str(model_name)
             print(f"[*] Judging texts for {model_name}...")
-            await judge_one_model(model_out_dir, v2t_data_list, rerun=args.rerun_judge)
+            await judge_one_model(
+                model_out_dir,
+                v2t_data_list,
+                rerun=args.rerun_judge,
+                batch_size=args.judge_batch_size,
+            )
 
 
 if __name__ == "__main__":
