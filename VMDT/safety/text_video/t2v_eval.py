@@ -11,7 +11,7 @@ from dotenv import load_dotenv
 from tqdm import trange
 
 from VMDT.models.t2v_models import load_t2v_model, t2v_model_list
-from VMDT.models.t2v_models.base import T2VBaseModel, T2VError
+from VMDT.models.t2v_models.base import T2VBaseModel
 from VMDT.models.t2v_models.model_name import T2VModelName
 from VMDT.safety.extra.types import T2VData, T2VDataList, T2VResult, T2VLLMJudgeResult
 from VMDT.safety.extra.types.utils import gen_id
@@ -192,14 +192,14 @@ async def eval_one_model(
         prompts = [d.prompt for d in t2v_batch]
         video_outputs = model.generate_videos(prompts, video_out_dir)
         for data, video_output in zip(t2v_batch, video_outputs):
-            if video_output.error == T2VError.SAFETY_REFUSAL:
+            if str(video_output.video_path).endswith("error"):
                 results.append(
                     T2VResult(
                         input_id=data.id,
                         by_pass=False,
                     )
                 )
-            elif video_output.error is not None:
+            if video_output.error is not None:
                 print(f"Error for {data.id}: {video_output.error}")
             else:
                 results.append(
