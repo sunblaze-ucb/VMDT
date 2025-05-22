@@ -30,7 +30,8 @@ class DDIMSampler(object):
         self.register_buffer('alphas_cumprod', to_torch(alphas_cumprod))
         self.register_buffer('alphas_cumprod_prev', to_torch(self.model.alphas_cumprod_prev))
         self.use_scale = self.model.use_scale
-        
+        print('DDIM scale', self.use_scale)
+
         if self.use_scale:
             self.register_buffer('scale_arr', to_torch(self.model.scale_arr))
             ddim_scale_arr = self.scale_arr.cpu()[self.ddim_timesteps]
@@ -138,6 +139,7 @@ class DDIMSampler(object):
                       cond_tau=1., target_size=None, start_timesteps=None,
                       **kwargs):
         device = self.model.betas.device        
+        print('ddim device', device)
         b = shape[0]
         if x_T is None:
             img = torch.randn(shape, device=device)

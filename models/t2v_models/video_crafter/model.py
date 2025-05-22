@@ -1,5 +1,5 @@
 from pathlib import Path
-from tqdm import tqdm
+
 from omegaconf import OmegaConf
 import torch
 
@@ -32,10 +32,10 @@ class VideoCrafter(T2VBaseModel):
         self.save_fps = save_fps
 
     def generate_videos(
-        self, text_inputs: list[str], output_dir: Path, batch_size=3
+        self, text_inputs: list[str], output_dir: Path, batch_size=2
     ) -> list[T2VOutput]:
         outputs = []
-        for i in tqdm(range(0, len(text_inputs), batch_size)):
+        for i in range(0, len(text_inputs), batch_size):
             batch_text_inputs = text_inputs[i : i + batch_size]
             outputs += self._generate_videos_batch(batch_text_inputs, output_dir)
         return outputs

@@ -30,8 +30,8 @@ git clone https://github.com/sunblaze-ucb/VMDT.git
 ### How to run the code
 
 ```bash
-cd vmdt
-conda env create -f environment.yml --name vmdt
+cd VMDT
+conda env create -f environment.yml
 conda activate vmdt
 cd ..
 python -m VMDT.[perspective].[modality].main --model_id [model_id]

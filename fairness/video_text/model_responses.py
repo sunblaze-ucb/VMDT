@@ -48,7 +48,7 @@ def stereotype(modelname):
     videopaths=[]
     videopaths_simple=[]
     for datapoint in ds:        
-        videopaths.append(f'{HERE}/vid/fairness/vid/stereotype/{datapoint['video']}')
+        videopaths.append(Path(f'{HERE}/vid/fairness/vid/stereotype/{datapoint['video']}'))
         videopaths_simple.append(datapoint['video'])
         prompts.append(datapoint['prompt'])
     
@@ -76,7 +76,7 @@ def decision_making(modelname):
     videopaths=[]
     videopaths_simple=[]
     for datapoint in ds:        
-        videopaths.append(f'{HERE}/vid/fairness/vid/decision_making/{datapoint['video']}')
+        videopaths.append(Path(f'{HERE}/vid/fairness/vid/decision_making/{datapoint['video']}'))
         videopaths_simple.append(datapoint['video'])
         prompts.append(datapoint['prompt'])
         
@@ -102,7 +102,7 @@ def factual_accuracy(modelname,*args):
     videopaths=[]
     videopaths_simple=[]
     for _ ,row in tqdm(videofiles.iterrows()):  
-        videopaths.append(f'{HERE}/vid/fairness/vid/overkill/{row['video']}')
+        videopaths.append(Path(f'{HERE}/vid/fairness/vid/overkill/{row['video']}'))
         videopaths_simple.append(row['video'])
         prompts.append(row['prompt'])
     
