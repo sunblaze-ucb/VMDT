@@ -40,7 +40,7 @@ python -m VMDT.[perspective].[modality].main --model_id [model_id]
 For example, you can run the following command:
 
 ```bash
-python -m VMDT.fairness.text_video.main --model_id Vchitect2
+python -m VMDT.safety.text_video.main --model_id Vchitect2
 python -m VMDT.fairness.video_text.main --model_id InternVL2.5-1B
 ```
 
