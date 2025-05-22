@@ -1,11 +1,10 @@
 from VMDT.fairness.text_video.model_responses import model_responses
 from VMDT.fairness.text_video.video_frame import extract_videoframe
-#from VMDT.fairness.text_video.FairFace.predict import main2
 from VMDT.fairness.text_video.score_calculation import score_calculation
 from VMDT.fairness.text_video.average import average
 import argparse, json
 from pathlib import Path
-# directory that this .py file lives in
+
 HERE = Path(__file__).resolve().parent
 
 KNOWN_MODEL_MODALITY = ['Nova','Pika','Luma','OpenSora1.2','Vchitect2','VideoCrafter2','CogVideoX-5B']
@@ -72,22 +71,22 @@ if __name__ == '__main__':
     ensure_env()
 
     if scenario=="":
-        #model_responses(model)
-        #extract_videoframe(model)
+        model_responses(model)
+        extract_videoframe(model)
         run_main2_in_dlib(model)
         score_calculation()
         average()
     elif "stereotype" == scenario or "factual_accuracy" == scenario:
         scenario_list=[scenario]
-        #model_responses(model,[f'{s}.csv' for s in scenario_list])
-        #extract_videoframe(model, scenario_list)
+        model_responses(model,[f'{s}.csv' for s in scenario_list])
+        extract_videoframe(model, scenario_list)
         run_main2_in_dlib(model, scenario)
         score_calculation(scenario_list)
         average()
     elif "decision_making" == scenario:
         scenario_list=['hiring', 'finance', 'education']
-        #model_responses(model,[f'{s}.csv' for s in scenario_list])
-        #extract_videoframe(model, scenario_list)
+        model_responses(model,[f'{s}.csv' for s in scenario_list])
+        extract_videoframe(model, scenario_list)
         run_main2_in_dlib(model, scenario)
         score_calculation(['decision_making'])
         average()
