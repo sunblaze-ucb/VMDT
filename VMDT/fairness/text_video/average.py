@@ -4,12 +4,13 @@ from pathlib import Path
 
 # directory that this .py file lives in
 HERE = Path(__file__).resolve().parent
+RESULT_PATH = Path(f'{HERE}/../../../results/t2v_results/fairness')
 
 def average():
 	
-	stereotype=pd.read_csv(f'{HERE}/../../../results/t2v_results/fairness/stereotype_result.csv')
-	decision=pd.read_csv(f'{HERE}/../../../results/t2v_results/fairness/decision_result.csv')
-	factual=pd.read_csv(f'{HERE}/../../../results/t2v_results/fairness/factual_result.csv')
+	stereotype=pd.read_csv( RESULT_PATH / 'stereotype_result.csv')
+	decision=pd.read_csv(RESULT_PATH / 'decision_result.csv')
+	factual=pd.read_csv(RESULT_PATH / 'factual_result.csv')
 	models = list(
 		set(stereotype["model"])
 		& set(decision["model"])
@@ -41,4 +42,4 @@ def average():
 			##### average by attribute####
 			#print(model, stereotype2['gender'].mean(),stereotype2['white'].mean(),stereotype2['age'].mean())
 			#print(model,decision2['gender'].mean(),decision2['white'].mean(),decision2['age'].mean())
-		average.to_csv(f'{HERE}/../../../results/t2v_results/fairness/average.csv')
+		average.to_csv(RESULT_PATH / 'average.csv')

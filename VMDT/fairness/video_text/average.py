@@ -6,11 +6,12 @@ from pathlib import Path
 
 # directory that this .py file lives in
 HERE = Path(__file__).resolve().parent
+RESULT_PATH = Path(f'{HERE}/../../../results/v2t_results/fairness')
 
 def average():
-	stereotype=pd.read_csv(f'{HERE}/../../results/v2t_results/fairness/stereotype_average.csv')
-	decision=pd.read_csv(f'{HERE}/../../results/v2t_results/fairness/decision_making_average.csv')
-	factual=pd.read_csv(f'{HERE}/../../results/v2t_results/fairness/factual_accuracy.csv')
+	stereotype=pd.read_csv(RESULT_PATH / 'stereotype_average.csv')
+	decision=pd.read_csv( RESULT_PATH /'decision_making_average.csv')
+	factual=pd.read_csv(RESULT_PATH / 'factual_accuracy.csv')
 	models = list(
 		set(stereotype["model"])
 		& set(decision["model"])
@@ -50,7 +51,7 @@ def average():
 				model,
 				((stereotype_average + decision_average + factual2) / 3) 
 			]
-		average.to_csv(f'{HERE}/../../results/t2v_results/fairness/average.csv')
+		average.to_csv(RESULT_PATH / 'average.csv')
 		
 	
 		
