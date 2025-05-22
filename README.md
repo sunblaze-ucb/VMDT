@@ -33,7 +33,7 @@ git clone https://github.com/sunblaze-ucb/VMDT.git
 cd VMDT
 conda env create -f environment.yml
 conda activate vmdt
-cd ..
+cp .env.template .env # set the api keys in .env
 python -m VMDT.[perspective].[modality].main --model_id [model_id]
 ```
 
