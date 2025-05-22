@@ -1,1 +1,0 @@
-from .model import Vchitect2 as Vchitect2

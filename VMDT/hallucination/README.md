@@ -1,49 +1,84 @@
-# VMDT - Hallucination
-## Installation
+# Hallucination
+
+## Environments
+### T2V
+To create the environment, we suggest using a miniconda container. Then install the following:
 ```bash
-conda env create -f environment.yml
-conda activate vmdt-hallu
+apptainer shell --nv --bind /ib-scratch /ib-scratch/chenguang02/scratch1/cnicholas/containers/miniconda.sif
+source ~/.bashrc
+conda env create -f use_environment.yml -n vmdt-hallu-new
+conda install -c nvidia/label/cuda-12.4.0 cuda-toolkit
+conda install -c conda-forge gxx_linux-64
+git clone https://github.com/NVIDIA/apex
+cd apex
+pip install -v --disable-pip-version-check --no-cache-dir --no-build-isolation --config-settings "--build-option=--cpp_ext" --config-settings "--build-option=--cuda_ext" ./
+pip install flash-attn --no-build-isolation
+pip install open-clip-torch==2.24.0
+```
+Also, for vLLM please create:
+```bash
+conda create -n vllm python=3.12 -y
+conda activate vllm
+pip install vllm
 ```
 
-## Download Models
+### V2T
+To create the environment, we suggest using a miniconda container. Then install the following:
 ```bash
-python3 download.py
+apptainer shell --nv --bind /ib-scratch,/usr/local/cuda:/cuda /ib-scratch/chenguang02/scratch1/cnicholas/containers/miniconda.sif
+source ~/.bashrc
+conda env create -f v2t.yml -n vmdt-hallu-v2t
+pip install datasets joblib matplotlib pydantic openai opencv-python moviepy boto3 anthropic qwen-vl-utils[decord] transformers==4.51.3
+pip install torch==2.5.1 torchvision==0.20.1 torchaudio==2.5.1  # May depend on your CUDA version. We use 12.3
 ```
 
-## Evaluation
-prepare the api keys in `.env`
+## Prepare to Run
+Download T2V models:
 ```bash
-cp .env.template .env
+export HF_TOKEN=<hf_token>
+python -m hallucination.download
 ```
 
-### T2V Models
-For example, to run on all scenarios and these three models, run:
+### Text-to-Video pipeline
+
+Run text-to-video generation, evaluation, and scoring in one step using the `text_video` package.
+
+From the project root directory, invoke:
 ```bash
-python T2V_inference_non_surrogate.py --scenarios OCR Distraction Counterfactual Misleading CoOccurrence NaturalSelection Temporal --models "VideoCrafter2" "Vchitect2" "OpenSora1.2" --num_gpus 8 --models_per_gpu 1 --num_instances_per_task -1 --num_instances_per_task_scenario 1
+python -m hallucination/text_video.main --model_id <MODEL_ID> [--scenario <SCENARIO>] [--debug]
 ```
-This will save an output file.
+
+- **MODEL_ID**: one of the supported model IDs (e.g., `VideoCrafter2`, `Vchitect2`, `OpenSora1.2`).
+- **SCENARIO**: one of the scenarios (`OCR`, `Distraction`, `Counterfactual`, `Misleading`, `CoOccurrence`, `NaturalSelection`, `Temporal`). Omit to run all scenarios.
+- **DEBUG**: If present, will only generate 1 video per task.
+
+This command will save generated videos and evaluation results under `results/t2v_results/hallucination/` and print the output file path to the console.
 
 To evaluate, first start up vLLM, filling in or changing the parameters as needed:
 ```
 CUDA_VISIBLE_DEVICES=<gpu_ids> vllm serve Qwen/Qwen2.5-VL-72B-Instruct \
-  --port <port> \
+  --port 8001 \
   --host 0.0.0.0 \
-  --allowed-local-media-path <path_to_videos> \
+  --allowed-local-media-path $(realpath results/t2v_results/hallucination) \
   --limit-mm-per-prompt image=5 \
   --tensor-parallel-size 4 \
   --max-model-len 8192 
 ```
 
-Then, run the following evaluation script.
+Then, run the following evaluation script, supplying all output files from the previous step:
 ```bash
-python T2V_evaluation_newer.py --video_json=<output_file> --n_frames=5 --num_instances_per_task=-1 --include_image_in_classification --combine_step --direct_evaluation --use_qwen
+python -m hallucination.text_video.T2V_evaluation_newer --video_json=<output_files> --n_frames=5 --num_instances_per_task=-1 --include_image_in_classification --combine_step --direct_evaluation --use_qwen
 ```
 
-This will save your evaluation results in a new file in the same directory as <output_file>.
+This will save your evaluation results in a new file in the same directory as <output_file> and save the overall score per model in `t2v_results/hallucination/average.csv`.
 
 ## V2T Models
 This will both run and evaluate the script.
 ```bash
-cd models/v2t_models
-python V2T_inference_non_surrogate.py --scenarios NaturalSelection Misleading Distraction Counterfactual --models qwen_vl2_7b llava_video_7b_fixed internvl2_5_8b --num_gpus 1 --models_per_gpu 1 --num_instances_per_task 1 --num_instances_per_task_scenario -1
+python -m hallucination.video_text.main --model_id <MODEL_ID> [--scenario <SCENARIO>] [--debug]
 ```
+- **MODEL_ID**: one of the supported model IDs (e.g., `GPT-4o`, `Qwen2.5-VL-3B`, `InternVL2.5-8B`).
+- **SCENARIO**: one of the scenarios (`Distraction`, `Counterfactual`, `Misleading`, `NaturalSelection`). Omit to run all scenarios.
+- **DEBUG**: If present, will only generate 1 video per task.
+
+*Note: In this code, we use keyword matching. However, using only keyword matching for the multiple choice questions may not yield completely accurate results. For the results in the paper we supplemented with LLM and manual checking.*

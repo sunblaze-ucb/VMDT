@@ -3,7 +3,7 @@ import sys
 from huggingface_hub import hf_hub_download, snapshot_download
 import subprocess
 
-from models.opensora.wrapper import OpenSoraWrapper
+from models.t2v_models.opensora.wrapper import OpenSoraWrapper
 
 
 def download_video_crafter2(out_dir: Path):
@@ -80,8 +80,8 @@ def download_opensora():
 
 
 if __name__ == "__main__":
-    download_video_crafter2(Path("models/video_crafter/cache"))
-    download_hunyuan(Path("models/hunyuan/cache"))
-    download_vchitect2(Path("models/vchitect2/cache"))
+    download_video_crafter2(Path("models/t2v_models/video_crafter/cache"))
+    # download_hunyuan(Path("models/hunyuan/cache"))
+    download_vchitect2(Path("models/t2v_models/vchitect2/cache"))
     download_opensora()
 
