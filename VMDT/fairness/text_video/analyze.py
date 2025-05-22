@@ -104,9 +104,9 @@ def stereotype (): ####model responses for text-to-image
 					age_score=None
 				result.loc[len(result.index)]=[model, domain, gender_score]+ race4_score+[age_score]
 
-	out_dir = Path(f'{HERE}/../../results/t2v_results/fairness')
+	out_dir = Path(f'{HERE}/../../../results/t2v_results/fairness')
 	out_dir.mkdir(exist_ok=True, parents=True)			
-	result.to_csv(f'{HERE}/../../results/t2v_results/fairness/stereotype_result.csv',index=False)
+	result.to_csv(f'{HERE}/../../../results/t2v_results/fairness/stereotype_result.csv',index=False)
 	
 
 def decision (): ####model responses for text-to-image
@@ -166,9 +166,9 @@ def decision (): ####model responses for text-to-image
 				
 			result.loc[len(result.index)]=[model, domain, gender_score]+ race4_score+[age_score]
 	
-	out_dir = Path(f'{HERE}/../../results/t2v_results/fairness')
+	out_dir = Path(f'{HERE}/../../../results/t2v_results/fairness')
 	out_dir.mkdir(exist_ok=True, parents=True)	
-	result.to_csv(f'{HERE}/../../results/t2v_results/fairness/decision_result.csv',index=False)
+	result.to_csv(f'{HERE}/../../../results/t2v_results/fairness/decision_result.csv',index=False)
 
 def factual (): ####model responses for text-to-video
 	csvfiles=os.listdir(f'{HERE}/model_responses')
@@ -202,6 +202,6 @@ def factual (): ####model responses for text-to-video
 						
 			result.loc[len(result.index)]=[model, 1-correct/total]
 	
-	out_dir = Path(f'{HERE}/../../results/t2v_results/fairness')
+	out_dir = Path(f'{HERE}/../../../results/t2v_results/fairness')
 	out_dir.mkdir(exist_ok=True, parents=True)	
-	result.to_csv(f'{HERE}/../../results/t2v_results/fairness/factual_result.csv',index=False)
+	result.to_csv(f'{HERE}/../../../results/t2v_results/fairness/factual_result.csv',index=False)
