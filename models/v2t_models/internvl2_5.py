@@ -264,18 +264,18 @@ class InternVL2_5(V2TBaseModel):
 
 
 # For testing locally (optional):
-if __name__ == "__main__":
-    # Make sure to have a valid video file at the specified path.
-    test_video = Path("./test_dis.mp4")
-    test_prompt = "What is the video about?"
+# if __name__ == "__main__":
+#     # Make sure to have a valid video file at the specified path.
+#     test_video = Path("./test_dis.mp4")
+#     test_prompt = "What is the video about?"
 
-    # Initialize the model (you can override model_id via load_kwargs if needed)
-    model = InternVL2_5("OpenGVLab/InternVL2_5-8B")
+#     # Initialize the model (you can override model_id via load_kwargs if needed)
+#     model = InternVL2_5("OpenGVLab/InternVL2_5-8B")
 
-    # Generate text for one video and prompt; you can pass additional kwargs (e.g. num_frames)
-    results = model.generate_texts([test_video], [test_prompt], num_frames=32)
-    for result in results:
-        if result.error:
-            print(f"Error processing {result.video_input}: {result.error}")
-        else:
-            print(f"Video: {result.video_input}\nResponse: {result.text_output}")
+#     # Generate text for one video and prompt; you can pass additional kwargs (e.g. num_frames)
+#     results = model.generate_texts([test_video], [test_prompt], num_frames=32)
+#     for result in results:
+#         if result.error:
+#             print(f"Error processing {result.video_input}: {result.error}")
+#         else:
+#             print(f"Video: {result.video_input}\nResponse: {result.text_output}")

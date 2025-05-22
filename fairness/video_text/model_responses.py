@@ -15,30 +15,28 @@ from datasets import load_dataset
 
 
 def video_download():
-    repo_id   = "mmfm-trust/V2T"
-    remote_root  = "fairness/vid"          # everything under here is what we’re mirroring
-    local_root   = Path(f"{HERE}/vid")         # top-level folder you want on disk (can be ".")
-
-    local_root.mkdir(exist_ok=True)
+    repo_id     = "mmfm-trust/V2T"
+    remote_root = "fairness/vid"                 
+    local_root  = Path(f"{HERE}/vid")           
+    local_root.mkdir(parents=True, exist_ok=True)
 
     video_files = [
         p for p in list_repo_files(repo_id, repo_type="dataset")
-        if p.startswith(f"{remote_root}") 
+        if p.startswith(f"{remote_root}/")
     ]
 
     for remote in video_files:
-        # Download (into the HF cache) and get its local-cache path
-        src_path = hf_hub_download(repo_id, filename=remote, repo_type="dataset")
+        rel_path = PurePosixPath(remote).relative_to(remote_root)
 
-        # Drop the "fairness/" prefix but keep the rest
-        rel_path = PurePosixPath(remote).relative_to(remote_root)   # → vid/decision/clip.mp4
-
-        # Combine with your chosen root; create any needed sub-folders
-        dest_path = local_root / rel_path
-        dest_path.parent.mkdir(parents=True, exist_ok=True)
-
-        if not dest_path.exists():
-            copy2(src_path, dest_path)
+       
+        hf_hub_download(
+            repo_id=repo_id,
+            repo_type="dataset",
+            subfolder=remote_root,          
+            filename=str(rel_path),         
+            local_dir=local_root,           
+            local_dir_use_symlinks=False    
+        )
 
 def stereotype(modelname):
     ds=load_dataset("mmfm-trust/V2T", "fairness")['stereotype']
@@ -50,7 +48,7 @@ def stereotype(modelname):
     videopaths=[]
     videopaths_simple=[]
     for datapoint in ds:        
-        videopaths.append(f'{HERE}/vid/stereotype/{datapoint['video']}')
+        videopaths.append(f'{HERE}/vid/fairness/vid/stereotype/{datapoint['video']}')
         videopaths_simple.append(datapoint['video'])
         prompts.append(datapoint['prompt'])
     
@@ -78,7 +76,7 @@ def decision_making(modelname):
     videopaths=[]
     videopaths_simple=[]
     for datapoint in ds:        
-        videopaths.append(f'{HERE}/vid/decision_making/{datapoint['video']}')
+        videopaths.append(f'{HERE}/vid/fairness/vid/decision_making/{datapoint['video']}')
         videopaths_simple.append(datapoint['video'])
         prompts.append(datapoint['prompt'])
         
@@ -104,7 +102,7 @@ def factual_accuracy(modelname,*args):
     videopaths=[]
     videopaths_simple=[]
     for _ ,row in tqdm(videofiles.iterrows()):  
-        videopaths.append(f'{HERE}/vid/overkill/{row['video']}')
+        videopaths.append(f'{HERE}/vid/fairness/vid/overkill/{row['video']}')
         videopaths_simple.append(row['video'])
         prompts.append(row['prompt'])
     
@@ -120,9 +118,9 @@ def factual_accuracy(modelname,*args):
 
 def model_responses(model_name, scenarios=['stereotype','decision_making','factual_accuracy']):
     folders = [
-        Path(f"{HERE}/vid/decision_making"),
-        Path(f"{HERE}/vid/stereotype"),
-        Path(f"{HERE}/vid/overkill")
+        Path(f"{HERE}/vid/fairness/vid/decision_making"),
+        Path(f"{HERE}/vid/fairness/vid/stereotype"),
+        Path(f"{HERE}/vid/fairness/vid/overkill")
     ]
 
     if any(not folder.exists() or not any(folder.iterdir()) for folder in folders):

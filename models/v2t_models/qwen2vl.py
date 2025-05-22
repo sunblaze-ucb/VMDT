@@ -147,13 +147,13 @@ class Qwen2VL(V2TBaseModel):
 # ----------------------------
 # Optional testing block
 # ----------------------------
-if __name__ == "__main__":
-    test_video = Path("/home/fpinto1/v2t_mmdt_video/models/test_dis.mp4")
-    test_prompt = "What is the video about?"
-    model = Qwen2VL("Qwen/Qwen2-VL-7B-Instruct")
-    results = model.generate_texts([test_video], [test_prompt], max_new_tokens=4096)
-    for res in results:
-        if res.error:
-            print(f"Error processing {res.video_input}: {res.error}")
-        else:
-            print(f"Video: {res.video_input}\nResponse: {res.text_output}")
+# if __name__ == "__main__":
+#     test_video = Path("/home/fpinto1/v2t_mmdt_video/models/test_dis.mp4")
+#     test_prompt = "What is the video about?"
+#     model = Qwen2VL("Qwen/Qwen2-VL-7B-Instruct")
+#     results = model.generate_texts([test_video], [test_prompt], max_new_tokens=4096)
+#     for res in results:
+#         if res.error:
+#             print(f"Error processing {res.video_input}: {res.error}")
+#         else:
+#             print(f"Video: {res.video_input}\nResponse: {res.text_output}")

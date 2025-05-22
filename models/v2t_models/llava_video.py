@@ -151,13 +151,13 @@ class LlavaVideo(V2TBaseModel):
 
 
 # Optional testing block:
-if __name__ == "__main__":
-    test_video = Path("./test_dis.mp4")
-    test_prompt = "What is the video about?"
-    client = LlavaVideo("lmms-lab/LLaVA-Video-7B-Qwen2")
-    results = client.generate_texts([test_video], [test_prompt], frames=32)
-    for res in results:
-        if res.error:
-            print(f"Error processing {res.video_input}: {res.error}")
-        else:
-            print(f"Video: {res.video_input}\nResponse: {res.text_output}")
+# if __name__ == "__main__":
+#     test_video = Path("./test_dis.mp4")
+#     test_prompt = "What is the video about?"
+#     client = LlavaVideo("lmms-lab/LLaVA-Video-7B-Qwen2")
+#     results = client.generate_texts([test_video], [test_prompt], frames=32)
+#     for res in results:
+#         if res.error:
+#             print(f"Error processing {res.video_input}: {res.error}")
+#         else:
+#             print(f"Video: {res.video_input}\nResponse: {res.text_output}")

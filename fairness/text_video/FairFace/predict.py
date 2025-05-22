@@ -11,6 +11,11 @@ from torchvision import models, transforms
 import dlib
 import os
 from tqdm import tqdm
+import argparse
+from pathlib import Path
+
+# directory that this .py file lives in
+HERE = Path(__file__).resolve().parent
 
 def rect_to_bb(rect):
 	# take a bounding predicted by dlib and convert it
@@ -195,17 +200,23 @@ def predidct_age_gender_race(save_prediction_at, imgs_path = 'cropped_faces/'):
     print("saved results at ", save_prediction_at)
 
 def main(model, type):
-    if model not in os.listdir('detected_faces'):
-        os.mkdir(f'detected_faces/{model}')
-    if type not in os.listdir(f'detected_faces/{model}'):
-        os.mkdir(f'detected_faces/{model}/{type}')
+    if model not in os.listdir(f'{HERE}/detected_faces'):
+        os.mkdir(f'{HERE}/detected_faces/{model}')
+    if type not in os.listdir(f'{HERE}/detected_faces/{model}'):
+        os.mkdir(f'{HERE}/detected_faces/{model}/{type}')
 
-    SAVE_DETECTED_AT = f"detected_faces/{model}/{type}"
-    imgs = [f'../video-safety-benchmark/model_responses_videoframe/{model}/{type}/{name}' for name in os.listdir(f'../video-safety-benchmark/model_responses_videoframe/{model}/{type}')]
+    SAVE_DETECTED_AT = f"{HERE}/detected_faces/{model}/{type}"
+    save_root = Path(SAVE_DETECTED_AT)
+    save_root.mkdir(parents=True, exist_ok=True)    # make sure the dir exists
+    
+    imgs = [f'{HERE}/../model_responses_videoframe/{model}/{type}/{name}' for name in os.listdir(f'{HERE}/../model_responses_videoframe/{model}/{type}')]
     detect_face(imgs, SAVE_DETECTED_AT)
     print("detected faces are saved at ", SAVE_DETECTED_AT)
     #Please change test_outputs.csv to actual name of output csv. 
-    predidct_age_gender_race(f"video_results/{model}_{type}_outputs.csv", SAVE_DETECTED_AT)
+
+    out_dir = Path(f"{HERE}/video_results")
+    out_dir.mkdir(exist_ok=True, parents=True)			
+    predidct_age_gender_race(f"{HERE}/video_results/{model}_{type}_outputs.csv", SAVE_DETECTED_AT)
 
 def main2(model,types=['stereotype','hiring','finance','education','factual_accuracy']):
     #Please create a csv with one column 'img_path', contains the full paths of all images to be analyzed.
@@ -221,3 +232,21 @@ def main2(model,types=['stereotype','hiring','finance','education','factual_accu
     for type in types:
         print(model,type)
         main(model,type) 
+
+def get_args():
+    parser = argparse.ArgumentParser()
+    parser.add_argument('model_id', type=str, help='Model ID to use for generation')
+    parser.add_argument('scenario', nargs="?",type=str, default=None, help='Scenario type (stereotype, decision_making, factual_accuracy)')
+    args = parser.parse_args()
+    return args
+
+if __name__ == '__main__':
+    args = get_args()
+    model=args.model_id
+    scenario=args.scenario
+    if scenario is None:
+        main2(model)
+    elif scenario=="decision_making":
+        main2(model, ['hiring','finance','education'])
+    else:
+        main2(model, [scenario])

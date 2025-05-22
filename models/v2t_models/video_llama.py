@@ -69,18 +69,18 @@ class VideoLlama(V2TBaseModel):
 
 
 # Optional testing block:
-if __name__ == "__main__":
-    # For testing, use a sample video and prompt.
-    test_video = Path("./test_dis.mp4")
-    test_prompt = "What is the video about?"
+# if __name__ == "__main__":
+#     # For testing, use a sample video and prompt.
+#     test_video = Path("./test_dis.mp4")
+#     test_prompt = "What is the video about?"
 
-    # Initialize the model. The model ID is passed here or can be provided via load_kwargs.
-    client = VideoLlama("DAMO-NLP-SG/VideoLLaMA2.1-7B-AV")
+#     # Initialize the model. The model ID is passed here or can be provided via load_kwargs.
+#     client = VideoLlama("DAMO-NLP-SG/VideoLLaMA2.1-7B-AV")
 
-    # Generate text output for the test video and prompt.
-    results = client.generate_texts([test_video], [test_prompt], do_sample=False)
-    for res in results:
-        if res.error:
-            print(f"Error processing {res.video_input}: {res.error}")
-        else:
-            print(f"Video: {res.video_input}\nResponse: {res.text_output}")
+#     # Generate text output for the test video and prompt.
+#     results = client.generate_texts([test_video], [test_prompt], do_sample=False)
+#     for res in results:
+#         if res.error:
+#             print(f"Error processing {res.video_input}: {res.error}")
+#         else:
+#             print(f"Video: {res.video_input}\nResponse: {res.text_output}")

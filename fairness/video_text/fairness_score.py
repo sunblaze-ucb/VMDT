@@ -45,35 +45,32 @@ def is_float(element: any) -> bool:
 
 
 def annotation_download():
-    repo_id   = "mmfm-trust/V2T"
-    remote_root  = "fairness/annotation"          # everything under here is what we’re mirroring
-    local_root   = Path(f"{HERE}/annotation")         # top-level folder you want on disk (can be ".")
+	repo_id   = "mmfm-trust/V2T"
+	remote_root  = "fairness/annotation"          # everything under here is what we’re mirroring
+	local_root   = Path(f"{HERE}/annotation")         # top-level folder you want on disk (can be ".")
 
-    local_root.mkdir(exist_ok=True)
+	local_root.mkdir(exist_ok=True)
 
-    annotation_files = [
-        p for p in list_repo_files(repo_id, repo_type="dataset")
-        if p.startswith(f"{remote_root}") 
-    ]
+	annotation_files = [
+		p for p in list_repo_files(repo_id, repo_type="dataset")
+		if p.startswith(f"{remote_root}") 
+	]
 
-    for remote in annotation_files:
-        # Download (into the HF cache) and get its local-cache path
-        src_path = hf_hub_download(repo_id, filename=remote, repo_type="dataset")
-
-        # Drop the "fairness/" prefix but keep the rest
-        rel_path = PurePosixPath(remote).relative_to(remote_root)   # → vid/decision/clip.mp4
-
-        # Combine with your chosen root; create any needed sub-folders
-        dest_path = local_root / rel_path
-        dest_path.parent.mkdir(parents=True, exist_ok=True)
-
-        if not dest_path.exists():
-            copy2(src_path, dest_path)
+	for remote in annotation_files:
+		rel_path = PurePosixPath(remote).relative_to(remote_root)       
+		hf_hub_download(
+			repo_id=repo_id,
+			repo_type="dataset",
+			subfolder=remote_root,          
+			filename=str(rel_path),         
+			local_dir=local_root,           
+			local_dir_use_symlinks=False    
+		)
 
 def stereotype():
 	models=sorted(os.listdir(f'{HERE}/model_responses/stereotype'))
 	output_file=pd.DataFrame({'model':[], 'gender': [],'age': [],'eth': []})
-	with open(f'{HERE}/annotation/CasualConversations_mini.json', 'r') as file:
+	with open(f'{HERE}/annotation/fairness/annotation/CasualConversations_mini.json', 'r') as file:
 		demographics=json.load(file)
 	
 	llama_model=Llama()
@@ -171,7 +168,7 @@ def stereotype_average():
 	models=sorted(os.listdir(f'{HERE}/model_responses/stereotype'))
 	llama_model=Llama()
 	output_file=pd.DataFrame({'model':[], 'gender': [],'age': [],'eth': []})
-	with open(f'{HERE}/annotation/CasualConversations_mini.json', 'r') as file:
+	with open(f'{HERE}/annotation/fairness/annotation/CasualConversations_mini.json', 'r') as file:
 		demographics=json.load(file)
 	#result=[]
 	age_result=[]
@@ -266,10 +263,10 @@ def decision_making():
 	models=sorted(os.listdir(f'{HERE}/model_responses/decision_making'))
 	llama_model=Llama()
 	output_file=pd.DataFrame({'model':[], 'gender': [],'age': [],'eth': []})
-	unpickled_df = pd.read_pickle(f"{HERE}/annotation/annotation_test.pkl")  
+	unpickled_df = pd.read_pickle(f"{HERE}/annotation/fairness/annotation/annotation_test.pkl")  
 	interview_score=unpickled_df['interview']
-	ages=pd.read_csv(f'{HERE}/annotation/age_anno_test.csv')
-	eth_gender=pd.read_csv(f'{HERE}/annotation/eth_gender_annotations_test.csv')
+	ages=pd.read_csv(f'{HERE}/annotation/fairness/annotation/age_anno_test.csv')
+	eth_gender=pd.read_csv(f'{HERE}/annotation/fairness/annotation/eth_gender_annotations_test.csv')
 	ages_dict={}
 	gender_dict={}
 	eth_dict={}
@@ -379,10 +376,10 @@ def decision_making_average():
 	models=sorted(os.listdir(f'{HERE}/model_responses/decision_making'))
 	llama_model=Llama()
 	output_file=pd.DataFrame({'model':[], 'gender': [],'age': [],'eth': []})
-	unpickled_df = pd.read_pickle(f"{HERE}/annotation/annotation_test.pkl")  
+	unpickled_df = pd.read_pickle(f"{HERE}/annotation/fairness/annotation/annotation_test.pkl")  
 	interview_score=unpickled_df['interview']
-	ages=pd.read_csv(f'{HERE}/annotation/age_anno_test.csv')
-	eth_gender=pd.read_csv(f'{HERE}/annotation/eth_gender_annotations_test.csv')
+	ages=pd.read_csv(f'{HERE}/annotation/fairness/annotation/age_anno_test.csv')
+	eth_gender=pd.read_csv(f'{HERE}/annotation/fairness/annotation/eth_gender_annotations_test.csv')
 	ages_dict={}
 	gender_dict={}
 	eth_dict={}
@@ -514,7 +511,7 @@ def factual_accuracy():
 	
 def fairness_score(scenarios=['stereotype','decision_making','factual_accuracy']):
 	folders = [
-		Path(f"{HERE}/annotation")
+		Path(f"{HERE}/annotation/fairness/annotation")
 	]
 
 	if any(not folder.exists() or not any(folder.iterdir()) for folder in folders):
