@@ -6,7 +6,7 @@ import os
 from datetime import datetime
 from datasets import load_dataset, concatenate_datasets
 from huggingface_hub import snapshot_download
-from hallucination.video_text.V2T_inference_non_surrogate import main as _inference_main, MODELS as _INFERENCE_MODELS
+from VMDT.hallucination.video_text.V2T_inference_non_surrogate import main as _inference_main, MODELS as _INFERENCE_MODELS
 
 def get_args():
     parser = argparse.ArgumentParser(
@@ -39,17 +39,7 @@ def get_args():
     return parser.parse_args()
 
 def download_dataset(vids_dir):
-    # vids_dir = os.path.join(vids_dir, "hallucination/video_text/vids")
-    # raw = load_dataset("mmfm-trust/V2T", "hallucination")
-    # data = []
-    # for task_name, ds in raw.items():
-    #     # ds_with_task = ds.add_column("task", [task_name] * len(ds))
-    #     data.append(ds)
-    # data = concatenate_datasets(data)
-    # data = [V2TInstance.parse_obj(d) for d in data][:10]  # small number for testing
-    # data = [d for d in data][:10]  # small number for testing
-    
-    if not os.path.exists("hallucination/vids"):
+    if not os.path.exists("VMDT/hallucination/vids"):
         snapshot_download(
             repo_id="mmfm-trust/V2T",  
             repo_type="dataset",
@@ -97,7 +87,7 @@ def main():
 
     # Download the dataset
     download_dataset("./")
-    videos_dir = "hallucination/"  # because 'file_name' attribute is 'vids/{video_id}.mp4'
+    videos_dir = "VMDT/hallucination/"  # because 'file_name' attribute is 'vids/{video_id}.mp4'
 
     timestamp = datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
     if scenario:

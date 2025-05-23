@@ -239,7 +239,6 @@ async def inference_qwenvl(model_name, model, processor, img_urls, prompt, syste
       if response_format:
           response_format = response_format["json_schema"]  # convert from openai format to json schema.
           response_format.pop("strict", None)  # remove strict key as it is not used in json schemas.
-          import pdb; pdb.set_trace()
           kwargs["extra_body"] = {"guided_json": response_format}  # special format for vllm: https://docs.vllm.ai/en/stable/features/structured_outputs.html.
       # Create a unique cache key using a hash of the inputs
       cache_key = hashlib.sha256(

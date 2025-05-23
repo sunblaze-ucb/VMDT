@@ -17,11 +17,11 @@ from enum import Enum
 from dataclasses import dataclass
 
 
-from hallucination.call_openai import async_call_openai
-from hallucination.data_utils import EVAL_MODEL, DEPTH_RELATIONS, SPACE_RELATIONS, SPATIAL_RELATIONS_REVERSE
-from hallucination.text_video.qwen_vl_helpers import init_qwenvl, inference_qwenvl
-from hallucination.text_video.detect_transitions import scene_detection
-from hallucination.text_video.average import average
+from VMDT.hallucination.call_openai import async_call_openai
+from VMDT.hallucination.data_utils import EVAL_MODEL, DEPTH_RELATIONS, SPACE_RELATIONS, SPATIAL_RELATIONS_REVERSE
+from VMDT.hallucination.text_video.qwen_vl_helpers import init_qwenvl, inference_qwenvl
+from VMDT.hallucination.text_video.detect_transitions import scene_detection
+from VMDT.hallucination.text_video.average import average
 
 STR_TO_NUM = {"two": 2, "three": 3, "four": 4, "five": 5, "six": 6, "seven": 7}
 
@@ -30,7 +30,7 @@ MAX_TOKENS = 4096
 GRID_SIZE = 5  # 4  # Adjust as needed
 
 # Add Semaphore Definition
-MAX_CONCURRENT_TASKS = 1  # 25  # Adjust based on your system
+MAX_CONCURRENT_TASKS = 25  # Adjust based on your system
 semaphore = asyncio.Semaphore(MAX_CONCURRENT_TASKS)
 
 # I think we need to sort if we want Caching with Qwen to work properly.

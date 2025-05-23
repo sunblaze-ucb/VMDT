@@ -2,12 +2,14 @@
 Main script for running the text-to-video hallucination evaluation pipeline.
 """
 import os
+import time
+import subprocess
 import argparse
 from datetime import datetime
 
 from datasets import load_dataset
-from hallucination.text_video.T2V_inference_non_surrogate import main as _inference_main, MODELS as _INFERENCE_MODELS
-# from .average import average
+from VMDT.hallucination.text_video.T2V_inference_non_surrogate import main as _inference_main, MODELS as _INFERENCE_MODELS
+from VMDT.hallucination.text_video.average import average
 
 KNOWN_MODEL_MODALITY = list(_INFERENCE_MODELS.keys())
 SCENARIOS = [
@@ -20,6 +22,53 @@ SCENARIOS = [
     "Temporal",
 ]
 
+def start_vllm_server(num_gpus):
+    """Start vLLM server in a separate process."""
+            # CUDA_VISIBLE_DEVICES=<gpu_ids> vllm serve Qwen/Qwen2.5-VL-72B-Instruct \
+  # --port 8001 \
+  # --host 0.0.0.0 \
+  # --allowed-local-media-path $(realpath results/t2v_results/hallucination) \
+  # --limit-mm-per-prompt image=5 \
+  # --tensor-parallel-size 4 \
+  # --max-model-len 8192
+    import pdb; pdb.set_trace()
+    test_path = os.path.abspath(
+        os.path.join(os.path.dirname(__file__), os.pardir, os.pardir, "results", "t2v_results", "hallucination")
+    )
+    cmd = [
+        "conda", "run", "-n", "vllm",
+        "vllm", "serve", "Qwen/Qwen2.5-VL-72B-Instruct",
+        "--host", "0.0.0.0",
+        "--port", "8001",
+        "--allowed-local-media-path", os.path.abspath(
+            os.path.join(os.path.dirname(__file__), os.pardir, os.pardir, "results", "t2v_results", "hallucination")
+        ),
+        "--limit-mm-per-prompt", "image=5",
+        "--tensor-parallel-size", str(num_gpus),
+        "--max-model-len", "8192",
+    ]
+
+    
+    process = subprocess.Popen(
+        cmd,
+        stdout=subprocess.PIPE,
+        stderr=subprocess.STDOUT,  # Combine stdout and stderr
+        text=True
+    )
+
+    for line in process.stdout:
+        print(line, end='')  # already includes newline
+    process.wait()
+    
+    # Wait for server to start
+    time.sleep(300)  # Give it some time to initialize
+    
+    return process
+
+def cleanup_vllm(vllm_process):
+    if vllm_process.poll() is None:  # If process is still running
+        vllm_process.terminate()
+        vllm_process.wait()
 
 def get_args():
     parser = argparse.ArgumentParser(
@@ -43,6 +92,11 @@ def get_args():
         "--debug",
         action="store_true",
         help="Enable debug mode (only run one instance of each task)",
+    )
+    parser.add_argument(
+        "--do_not_evaluate",
+        action="store_true",
+        help="Enable evaluation mode (run evaluation after generation)",
     )
     return parser.parse_args()
 
@@ -100,5 +154,29 @@ if __name__ == "__main__":
         num_instances_per_task=-1 if not args.debug else 1,
         num_instances_per_task_scenario=-1 if not args.debug else 1,
     )
+    
+    if not args.do_not_evaluate:
+        # Start vLLM server
+        vllm_process = start_vllm_server(num_gpus=4)
+        import pdb; pdb.set_trace()
 
-    # average()
+        try:
+    # Need to run the below:
+    # python -m hallucination.text_video.T2V_evaluation_newer --video_json=<output_files> --n_frames=5 --num_instances_per_task=-1 --include_image_in_classification --combine_step --direct_evaluation --use_qwen
+            os.system(
+                f"python -m VMDT.hallucination.text_video.T2V_evaluation_newer "
+                f"--video_json={output_file} "
+                f"--n_frames=5 "
+                f"--num_instances_per_task=-1 "
+                f"--include_image_in_classification "
+                f"--combine_step "
+                f"--direct_evaluation "
+                f"--use_qwen"
+            )
+        finally:
+            # Cleanup vLLM server
+            cleanup_vllm(vllm_process)
+
+        # Run the average script
+        output_filename = f"{output_file.replace('.json', f'_evaluated.json')}"
+        average([output_filename])

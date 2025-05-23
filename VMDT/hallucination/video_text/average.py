@@ -278,7 +278,6 @@ def create_v2t_latex_table(final_results):
             overall_correct = 0  # instead of averaging over task scores, we average over task instances.
             overall_total = 0
             for model in models_sorted:
-                # Instead of clean_model_name, look up the LaTeX macro name.
                 disp_model = macro_model_mapping.get(model, model)
                 model_scores[model] = {}
                 total_score = 0.0
@@ -456,9 +455,6 @@ def create_v2t_latex_table(final_results):
     print(table2_str)
     print(table3_str)
     return table1_str, table2_str
-
-def clean_model_name(model_name, model_class):
-    return model_mapping.get(model_name, model_name)
 
 def is_matching(instance1, instance2):
     """match on scenario_name", "question", "gt", "answer_choices", "task_name": "ObjectRecognition"""
@@ -687,8 +683,8 @@ def average(results_file):
     # rename 'index' to 'model' and drop 'total'
     df = df.rename(columns={"index": "model"})
     df = df.drop(columns=["total"])
-    df.to_csv("results/v2t_results/hallucination/average.csv", index=False)
-    print(f"Average CSV saved to results/v2t_results/hallucination/average.csv")
+    df.to_csv("VMDT/results/v2t_results/hallucination/average.csv", index=False)
+    print(f"Average CSV saved to VMDT/results/v2t_results/hallucination/average.csv")
     print(f"Average CSV:\n{df}")
 
 if __name__ == "__main__":

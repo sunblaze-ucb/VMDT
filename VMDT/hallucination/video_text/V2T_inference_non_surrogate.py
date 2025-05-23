@@ -16,41 +16,41 @@ import sys
 from dotenv import load_dotenv
 load_dotenv()
 
-from hallucination.video_text.average import average
+from VMDT.hallucination.video_text.average import average
 
 # Define a directory for caching
 cache_dir = "./cache"
 memory = Memory(cache_dir, verbose=0)
 
 # need to handle separately:
-# from models.v2t_models.qwen2vl import Qwen2VL
+from models.v2t_models.qwen2vl import Qwen2VL
 
-# from models.v2t_models.video_llama import VideoLlama
+from models.v2t_models.video_llama import VideoLlama
 
-# from models.v2t_models.llava_video import LlavaVideo
-# from models.v2t_models.internvl2_5 import InternVL2_5
-from models.v2t_models.gpt import GPT
-from models.v2t_models.nova import Nova
-from models.v2t_models.claude import Claude
+from models.v2t_models.llava_video import LlavaVideo
+from models.v2t_models.internvl2_5 import InternVL2_5
+from VMDT.models.v2t_models.gpt import GPT
+from VMDT.models.v2t_models.nova import Nova
+from VMDT.models.v2t_models.claude import Claude
 
 MODELS = {
-    # "Qwen2.5-VL-3B": partial(Qwen2VL, model_name="Qwen/Qwen2.5-VL-3B-Instruct"),
-    # "Qwen2.5-VL-7B": partial(Qwen2VL, model_name="Qwen/Qwen2.5-VL-7B-Instruct"),
-    # "Qwen2.5-VL-72B": partial(Qwen2VL, model_name="Qwen/Qwen2.5-VL-72B-Instruct"),
+    "Qwen2.5-VL-3B": partial(Qwen2VL, model_name="Qwen/Qwen2.5-VL-3B-Instruct"),
+    "Qwen2.5-VL-7B": partial(Qwen2VL, model_name="Qwen/Qwen2.5-VL-7B-Instruct"),
+    "Qwen2.5-VL-72B": partial(Qwen2VL, model_name="Qwen/Qwen2.5-VL-72B-Instruct"),
 
-    # "VideoLlama-7B": partial(VideoLlama, model_name='DAMO-NLP-SG/VideoLLaMA2.1-7B-AV'),
-    # "VideoLlama-72B": partial(VideoLlama, model_name='DAMO-NLP-SG/VideoLLaMA2-72B'),
+    "VideoLlama-7B": partial(VideoLlama, model_name='DAMO-NLP-SG/VideoLLaMA2.1-7B-AV'),
+    "VideoLlama-72B": partial(VideoLlama, model_name='DAMO-NLP-SG/VideoLLaMA2-72B'),
 
-    # "LlavaVideo-7B": partial(LlavaVideo, model_name="lmms-lab/LLaVA-Video-7B-Qwen2"),
-    # "LlavaVideo-72B": partial(LlavaVideo, model_name="lmms-lab/LLaVA-Video-72B-Qwen2"),
+    "LlavaVideo-7B": partial(LlavaVideo, model_name="lmms-lab/LLaVA-Video-7B-Qwen2"),
+    "LlavaVideo-72B": partial(LlavaVideo, model_name="lmms-lab/LLaVA-Video-72B-Qwen2"),
 
-    # "InternVL2.5-1B": partial(InternVL2_5, model_name='OpenGVLab/InternVL2_5-1B'),
-    # "InternVL2.5-2B": partial(InternVL2_5, model_name='OpenGVLab/InternVL2_5-2B'),
-    # "InternVL2.5-4B": partial(InternVL2_5, model_name='OpenGVLab/InternVL2_5-4B'),
-    # "InternVL2.5-8B": partial(InternVL2_5, model_name='OpenGVLab/InternVL2_5-8B'),
-    # "InternVL2.5-26B": partial(InternVL2_5, model_name='OpenGVLab/InternVL2_5-26B'),
-    # "InternVL2.5-38B": partial(InternVL2_5, model_name='OpenGVLab/InternVL2_5-38B'),
-    # "InternVL2.5-78B": partial(InternVL2_5, model_name='OpenGVLab/InternVL2_5-78B'),
+    "InternVL2.5-1B": partial(InternVL2_5, model_name='OpenGVLab/InternVL2_5-1B'),
+    "InternVL2.5-2B": partial(InternVL2_5, model_name='OpenGVLab/InternVL2_5-2B'),
+    "InternVL2.5-4B": partial(InternVL2_5, model_name='OpenGVLab/InternVL2_5-4B'),
+    "InternVL2.5-8B": partial(InternVL2_5, model_name='OpenGVLab/InternVL2_5-8B'),
+    "InternVL2.5-26B": partial(InternVL2_5, model_name='OpenGVLab/InternVL2_5-26B'),
+    "InternVL2.5-38B": partial(InternVL2_5, model_name='OpenGVLab/InternVL2_5-38B'),
+    "InternVL2.5-78B": partial(InternVL2_5, model_name='OpenGVLab/InternVL2_5-78B'),
 
     "GPT-4o-mini": partial(GPT, model_name='gpt-4o-mini-2024-07-18', model_id='gpt-4o-mini-2024-07-18'),
     "GPT-4o": partial(GPT, model_name="gpt-4o-2024-11-20", model_id="gpt-4o-2024-11-20"),

@@ -75,8 +75,8 @@ import base64
 import numpy as np
 import json
 import asyncio
-from hallucination.call_openai import async_call_openai
-from hallucination.data_utils import POSSIBLE_TRANSITIONS
+from VMDT.hallucination.call_openai import async_call_openai
+from VMDT.hallucination.data_utils import POSSIBLE_TRANSITIONS
 
 # Assumed to already exist in your file: EVAL_MODEL, MAX_TOKENS, async_call_openai
 

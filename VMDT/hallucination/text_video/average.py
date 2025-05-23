@@ -517,10 +517,9 @@ def average(evaluation_files):
 
     # Convert to DataFrame
     original_df = pd.DataFrame(data)
-    get_latex_main_body_table(df=original_df)
-    get_latex_overall_table(df=original_df)  # appendix table
+    # get_latex_main_body_table(df=original_df)
+    # get_latex_overall_table(df=original_df)  # appendix table
 
-    input("Double check this aligns with what's used in the get_latex_* fns.")
     # Create average.csv to save in results/t2v_results/hallucination with two columns: model and average
     average_df = original_df.groupby("model_name")["evaluation_metric"].mean().reset_index()
     average_df = average_df.rename(columns={"evaluation_metric": "average"})
@@ -528,8 +527,8 @@ def average(evaluation_files):
     # Sort the DataFrame by average in descending order
     average_df = average_df.sort_values(by="average", ascending=False)
     # Save to CSV
-    average_df.to_csv("results/t2v_results/hallucination/average.csv", index=False)
-    print(f"Average CSV saved to results/t2v_results/hallucination/average.csv")
+    average_df.to_csv("VMDT/results/t2v_results/hallucination/average.csv", index=False)
+    print(f"Average CSV saved to VMDT/results/t2v_results/hallucination/average.csv")
     print(f"Average CSV:\n{average_df}")
 
 if __name__ == "__main__":

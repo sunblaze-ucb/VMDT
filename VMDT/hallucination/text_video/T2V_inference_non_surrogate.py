@@ -30,7 +30,7 @@ import torch.distributed as dist
 from torch.distributed import is_initialized as dist_is_initialized
 
 
-from models.t2v_models import load_t2v_model
+from VMDT.models.t2v_models import load_t2v_model
 
 MODELS = {
     "CogVideoX-5B": partial(load_t2v_model, "CogVideoX-5B"),
