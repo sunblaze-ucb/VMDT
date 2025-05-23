@@ -39,7 +39,7 @@ export LD_LIBRARY_PATH=/cuda/lib64:$LD_LIBRARY_PATH
 Download T2V models:
 ```bash
 export HF_TOKEN=<hf_token>
-python -m hallucination.download
+python -m VMDT.hallucination.download
 ```
 
 ### Text-to-Video pipeline
@@ -48,21 +48,21 @@ Run text-to-video generation, evaluation, and scoring in one step using the `tex
 
 From the project root directory, invoke:
 ```bash
-python -m hallucination/text_video.main --model_id <MODEL_ID> [--scenario <SCENARIO>] [--debug] [--do_not_evaluate]
+python -m VMDT.hallucination/text_video.main --model_id <MODEL_ID> [--scenario <SCENARIO>] [--debug] [--do_not_evaluate]
 ```
 
 - **MODEL_ID**: one of the supported model IDs (e.g., `VideoCrafter2`, `Vchitect2`, `OpenSora1.2`).
 - **SCENARIO**: one of the scenarios (`OCR`, `Distraction`, `Counterfactual`, `Misleading`, `CoOccurrence`, `NaturalSelection`, `Temporal`). Omit to run all scenarios.
 - **DEBUG**: If present, will only generate 1 video per task.
 
-This command will save generated videos and evaluation results under `results/t2v_results/hallucination/` and print the output file path to the console. If you do not add the `--do_not_evaluate` flag, it will also run the evaluation script and save the results in `results/t2v_results/hallucination/average.csv`.
+This command will save generated videos and evaluation results under `VMDT/results/t2v_results/hallucination/` and print the output file path to the console. If you do not add the `--do_not_evaluate` flag, it will also run the evaluation script and save the results in `VMDT/results/t2v_results/hallucination/average.csv`.
 
 If you want to evaluate many files altogether, include the `--do_not_evaluate` flag, which will not run evaluation. Then, to evaluate, first activate the `vllm` environment, then start up vLLM, filling in or changing the parameters as needed:
 ```
 CUDA_VISIBLE_DEVICES=<gpu_ids> vllm serve Qwen/Qwen2.5-VL-72B-Instruct \
   --port 8001 \
   --host 0.0.0.0 \
-  --allowed-local-media-path $(realpath results/t2v_results/hallucination) \
+  --allowed-local-media-path $(realpath VMDT/results/t2v_results/hallucination) \
   --limit-mm-per-prompt image=5 \
   --tensor-parallel-size 4 \
   --max-model-len 8192 
@@ -70,15 +70,15 @@ CUDA_VISIBLE_DEVICES=<gpu_ids> vllm serve Qwen/Qwen2.5-VL-72B-Instruct \
 
 Then, run the following evaluation script, supplying all output files from the previous step:
 ```bash
-python -m hallucination.text_video.T2V_evaluation_newer --video_json=<output_files> --n_frames=5 --num_instances_per_task=-1 --include_image_in_classification --combine_step --direct_evaluation --use_qwen
+python -m VMDT.hallucination.text_video.T2V_evaluation_newer --video_json=<output_files> --n_frames=5 --num_instances_per_task=-1 --include_image_in_classification --combine_step --direct_evaluation --use_qwen
 ```
 
-This will save your evaluation results in a new file in the same directory as <output_file> and save the overall score per model in `t2v_results/hallucination/average.csv`.
+This will save your evaluation results in a new file in the same directory as <output_file> and save the overall score per model in `VMDT/t2v_results/hallucination/average.csv`.
 
 ## V2T Models
 This will both run and evaluate the script.
 ```bash
-python -m hallucination.video_text.main --model_id <MODEL_ID> [--scenario <SCENARIO>] [--debug]
+python -m VMDT.hallucination.video_text.main --model_id <MODEL_ID> [--scenario <SCENARIO>] [--debug]
 ```
 - **MODEL_ID**: one of the supported model IDs (e.g., `Qwen/Qwen2.5-VL-72B-Instruct`, `llava_video_7b`, `internvl2_5_8b`).
 - **SCENARIO**: one of the scenarios (`OCR`, `Distraction`, `Counterfactual`, `Misleading`, `CoOccurrence`, `NaturalSelection`, `Temporal`). Omit to run all scenarios.
