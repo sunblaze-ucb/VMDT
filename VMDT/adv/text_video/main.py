@@ -142,7 +142,7 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument('--model_id', type=str, required=True, choices=['Nova','Pika','Luma','OpenSora1.2','Vchitect2','VideoCrafter2','CogVideoX-5B'])
     parser.add_argument('--output_dir', type=str, default="results/t2v_results/adv/")
-    parser.add_argument('--vids_dir', type=str, default="adv/t2v_vids/")
+    parser.add_argument('--vids_dir', type=str, default="VMDT/adv/t2v_vids/")
     parser.add_argument('--n_gpus', type=int, default=1)
     parser.add_argument('--n_frames', type=int, default=5)
     parser.add_argument('--concurrency', type=int, default=10)

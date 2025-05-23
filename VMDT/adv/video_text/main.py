@@ -28,7 +28,7 @@ def run_instances_on_gpu_for_model(prompts, videos, model_name, gpu_id):
     
     model = load_v2t_model(model_name)
 
-    text_outputs = model.generate_texts(prompts, videos)
+    text_outputs = model.generate_texts(videos, prompts)
 
     return text_outputs
 
@@ -65,6 +65,8 @@ def run_instances_parallel(prompts, videos, model_name, num_gpus=8):
     return combined_results
 
 def main(args):
+
+    os.makedirs(args.output_dir, exist_ok=True)
     
     # Load the dataset
     raw = load_dataset("mmfm-trust/V2T", "adv")
@@ -97,9 +99,9 @@ def main(args):
 
     # Run the model
     if args.n_gpus > 1:
-        outputs = run_instances_parallel(prompts, videos, args.model, args.n_gpus)
+        outputs = run_instances_parallel(prompts, videos, args.model_id, args.n_gpus)
     else:
-        outputs = run_instances_on_gpu_for_model(prompts, videos, args.model, 0)
+        outputs = run_instances_on_gpu_for_model(prompts, videos, args.model_id, 0)
 
     # Evaluate the model
     for i in range(0, len(outputs), 2):
@@ -119,7 +121,7 @@ def main(args):
             adv_score=adv_score
         ) 
 
-    write_jsonl([instance.model_dump() for instance in data], args.output_path)
+    write_jsonl([instance.model_dump() for instance in data], os.path.join(args.output_dir, f"{args.model_id}.jsonl"))
 
     average_score = sum([instance.eval_results[args.model_id].adv_score for instance in data]) / len(data)
 
@@ -144,10 +146,10 @@ def main(args):
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
-    parser.add_argument("--model", type=str, required=True)
-    parser.add_argument("--output_path", type=str, required=True)
-    parser.add_argument("--vids_dir", type=str, default="adv/v2t_vids/")
-    parser.add_argument("--n_gpus", type=int, default=8)
+    parser.add_argument("--model_id", type=str, required=True)
+    parser.add_argument("--output_dir", type=str, default="results/v2t_results/adv/")
+    parser.add_argument("--vids_dir", type=str, default="VMDT/adv/v2t_vids/")
+    parser.add_argument("--n_gpus", type=int, default=1)
     parser.add_argument("--seed", type=int, default=42)
     args = parser.parse_args()
     set_seed(args.seed)

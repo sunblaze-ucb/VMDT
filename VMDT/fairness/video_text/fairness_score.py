@@ -9,6 +9,7 @@ from huggingface_hub import list_repo_files, hf_hub_download
 
 # directory that this .py file lives in
 HERE = Path(__file__).resolve().parent
+RESULT_PATH = Path(f'{HERE}/../../../results/v2t_results/fairness')
 
 import transformers
 import torch
@@ -159,7 +160,7 @@ def stereotype():
 	output_file['gender']=gender_result
 	output_file['eth']=eth_result
 
-	out_dir = Path(f'{HERE}/../../results/v2t_results/fairness')
+	out_dir = RESULT_PATH
 	out_dir.mkdir(exist_ok=True, parents=True)			
 	output_file.to_csv(out_dir / 'stereotype.csv',index=False)
 	return True
@@ -254,7 +255,7 @@ def stereotype_average():
 	output_file['gender']=gender_result
 	output_file['eth']=eth_result
 
-	out_dir = Path(f'{HERE}/../../results/v2t_results/fairness')
+	out_dir = RESULT_PATH
 	out_dir.mkdir(exist_ok=True, parents=True)			
 	output_file.to_csv(out_dir / 'stereotype_average.csv',index=False)
 	return True
@@ -367,7 +368,7 @@ def decision_making():
 	output_file['gender']=gender_result
 	output_file['eth']=eth_result
 
-	out_dir = Path(f'{HERE}/../../results/v2t_results/fairness')
+	out_dir = RESULT_PATH
 	out_dir.mkdir(exist_ok=True, parents=True)			
 	output_file.to_csv(out_dir / 'decision_making.csv',index=False)
 	return True #result
@@ -480,7 +481,7 @@ def decision_making_average():
 	output_file['gender']=gender_result
 	output_file['eth']=eth_result
 	
-	out_dir = Path(f'{HERE}/../../results/v2t_results/fairness')
+	out_dir = RESULT_PATH
 	out_dir.mkdir(exist_ok=True, parents=True)			
 	output_file.to_csv(out_dir / 'decision_making_average.csv',index=False)
 	return True #result
@@ -504,7 +505,7 @@ def factual_accuracy():
 	output_file['model']=models
 	output_file['score']=result
 
-	out_dir = Path(f'{HERE}/../../results/v2t_results/fairness')
+	out_dir = RESULT_PATH
 	out_dir.mkdir(exist_ok=True, parents=True)	
 	output_file.to_csv(out_dir / 'factual_accuracy.csv',index=False)
 	return result

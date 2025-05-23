@@ -63,7 +63,7 @@ def main(args):
         ds_with_task = ds.add_column("task", [task_name] * len(ds))
         data.append(ds_with_task)
     data = concatenate_datasets(data)
-    data = [T2VInstance.parse_obj(d) for d in data]
+    data = [T2VInstance.parse_obj(d) for d in data][:5]
 
     os.makedirs(args.vids_dir, exist_ok=True)
         
@@ -102,7 +102,7 @@ if __name__ == "__main__":
     parser.add_argument("--output_path", type=str, required=True)
     parser.add_argument("--benign", action="store_true")
     parser.add_argument("--adversarial", action="store_true")
-    parser.add_argument("--vids_dir", type=str, default="vids/")
+    parser.add_argument("--vids_dir", type=str, default="VMDT/adv/t2v_vids/")
     parser.add_argument("--n_gpus", type=int, default=8)
     parser.add_argument("--seed", type=int, default=42)
     args = parser.parse_args()
