@@ -415,51 +415,79 @@ def evaluate_predictions(predictions: List[Dict], ground_truth: Dict[str, Dict])
 	
 	return metrics
 
-def main():
-    input_dir = ""
+def evaluate_city_predictions(input_dir: str, ground_truth_csv: str) -> Dict:
+    """
+    Evaluate city predictions from model outputs against ground truth.
     
-	# File paths - replace with your actual file paths
-	truth = pd.read_csv("")  ### TODO: https://huggingface.co/datasets/mmfm-trust/V2T/tree/main/privacy
-	ground_truth = {}
-	for index, row in truth.iterrows():
-		ground_truth[row["file"].replace(".mp4", "")] = {"city": row["city"], "state": row["state"], "zipcode":row["zipcode"]}
-	
-	directories = [d for d in os.listdir(input_dir) if os.path.isdir(os.path.join(input_dir, d))]
+    Args:
+        input_dir: Directory containing model prediction results
+        ground_truth_csv: Path to CSV file containing ground truth data
+        
+    Returns:
+        Dictionary containing evaluation metrics for each model directory
+    """
+    # Load ground truth data
+    truth = pd.read_csv(ground_truth_csv)
+    ground_truth = {}
+    for index, row in truth.iterrows():
+        ground_truth[row["file"].replace(".mp4", "")] = {
+            "city": row["city"], 
+            "state": row["state"], 
+            "zipcode": row["zipcode"]
+        }
+    
+    # Get all model directories
+    directories = [d for d in os.listdir(input_dir) if os.path.isdir(os.path.join(input_dir, d))]
+    
+    # Store results for each model
+    all_results = {}
+    
+    for d in directories:
+        prediction_file = os.path.join(input_dir, d, "city_results.json")
+        print(f"Processing {prediction_file}")
+        
+        # Parse the files
+        predictions = parse_prediction_file(prediction_file)
+        
+        print(f"Loaded {len(ground_truth)} ground truth locations")
+        print(f"Loaded {len(predictions)} predictions")
+        
+        # Evaluate predictions
+        metrics = evaluate_predictions(predictions, ground_truth)
+        
+        # Print results
+        print(f"\n=== Evaluation Results for {d} ===")
+        print(f"Total predictions: {metrics['total_predictions']}")
+        print(f"Correct predictions: {metrics['correct_predictions']} ({metrics['accuracy']:.2%})")
+        print(f"Incorrect predictions: {metrics['incorrect_predictions']} ({metrics['incorrect_rate']:.2%})")
+        print(f"Refusals: {metrics['refusals']} ({metrics['refusal_rate']:.2%})")
+        print(f"Unmatched videos: {metrics['unmatched_videos']}")
+        
+        # Print sample of incorrect predictions for analysis
+        print(f"\n=== Sample Incorrect Predictions for {d} ===")
+        incorrect_samples = [r for r in metrics['detailed_results'] if r['status'] == 'incorrect'][:5]
+        for i, sample in enumerate(incorrect_samples):
+            print(f"Example {i+1}: {sample['video_id']}")
+            print(f"  Predicted: {sample['predicted']}")
+            print(f"  Ground truth: {sample['ground_truth']}")
+            print(f"  Output preview: {sample['output']}")
+        
+        # Export detailed results
+        output_file = os.path.join(input_dir, d, "city_evaluation_results.json")
+        with open(output_file, "w") as f:
+            json.dump(metrics, f, indent=2, default=str)
+        print(f"\nDetailed results saved to {output_file}")
+        
+        # Store results
+        all_results[d] = metrics
+    
+    return all_results
 
-	for d in directories:
-		prediction_file = os.path.join(d, "city_results.json")
-		print(prediction_file)
-		
-		# Parse the files
-		predictions = parse_prediction_file(prediction_file)
-		
-		print(f"Loaded {len(ground_truth)} ground truth locations")
-		print(f"Loaded {len(predictions)} predictions")
-		
-		# Evaluate predictions
-		metrics = evaluate_predictions(predictions, ground_truth)
-		
-		# Print results
-		print("\n=== Evaluation Results ===")
-		print(f"Total predictions: {metrics['total_predictions']}")
-		print(f"Correct predictions: {metrics['correct_predictions']} ({metrics['accuracy']:.2%})")
-		print(f"Incorrect predictions: {metrics['incorrect_predictions']} ({metrics['incorrect_rate']:.2%})")
-		print(f"Refusals: {metrics['refusals']} ({metrics['refusal_rate']:.2%})")
-		print(f"Unmatched videos: {metrics['unmatched_videos']}")
-		
-		# Print sample of incorrect predictions for analysis
-		print("\n=== Sample Incorrect Predictions ===")
-		incorrect_samples = [r for r in metrics['detailed_results'] if r['status'] == 'incorrect'][:5]
-		for i, sample in enumerate(incorrect_samples):
-			print(f"Example {i+1}: {sample['video_id']}")
-			print(f"  Predicted: {sample['predicted']}")
-			print(f"  Ground truth: {sample['ground_truth']}")
-			print(f"  Output preview: {sample['output']}")
-		
-		# Export detailed results
-		with open(os.path.join(d, "city_evaluation_results.json"), "w") as f:
-			json.dump(metrics, f, indent=2, default=str)
-		print("\nDetailed results saved to city_evaluation_results.json")
+def main():
+    # Example usage
+    input_dir = ""  # Replace with your input directory
+    ground_truth_csv = ""  # Replace with your ground truth CSV path
+    results = evaluate_city_predictions(input_dir, ground_truth_csv)
 
 if __name__ == "__main__":
 	main()

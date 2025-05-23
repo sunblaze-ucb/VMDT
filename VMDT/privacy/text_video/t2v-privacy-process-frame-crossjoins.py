@@ -12,7 +12,7 @@ import cv2
 import itertools
 import pickle
 
-from models import T2VModelName, t2v_model_list
+from VDMT.models.t2v_models import T2VModelName, t2v_model_list
 
 def show_image_plt(np_array):
 	"""
@@ -133,92 +133,124 @@ def extract_frames_to_list(video_path):
 def abr_name(input):
 	return "".join(val[0].lower() if (len(val) > 0 and val[0].isalnum()) else "" for val in input.split(" "))
 
-if __name__ == "__main__":
-    ### Inputs
-    generated_vid_dir = ""
-    webvid_vid_dir = ""
-    out_dir = ""
+def process_frame_crossjoins(
+    generated_vid_dir: Path,
+    webvid_vid_dir: Path,
+    out_dir: Path,
+    dataset_url: str = "https://huggingface.co/datasets/mmfm-trust/T2V/tree/main/privacy",
+    models: list[T2VModelName] = None
+) -> None:
+    """
+    Process frame crossjoins between generated and original videos to calculate similarity metrics.
     
-	clip_model, preprocess = clip.load("ViT-B/32", device="cpu")
+    Args:
+        generated_vid_dir (Path): Directory containing generated videos
+        webvid_vid_dir (Path): Directory containing original WebVid videos
+        out_dir (Path): Directory to save processed results
+        dataset_url (str): URL to load video metadata from
+        models (list[T2VModelName]): List of models to process. If None, processes all models
+    """
+    if models is None:
+        models = t2v_model_list
+        
+    # Load CLIP model
+    clip_model, preprocess = clip.load("ViT-B/32", device="cpu")
+    
+    # Load dataset
+    df = pd.read_csv(dataset_url)
+    name_url_dict = dict(zip(df["name"], df["video_id"]))
+    
+    model_names = [str(model) for model in models]
+    
+    for model_name in model_names:
+        all_webvid_subset_frames = []
+        all_generated_caption_subset_frames = []
+        
+        for caption in name_url_dict.keys():
+            abriged_name = abr_name(caption)
+            
+            webvid_file = webvid_vid_dir / abriged_name
+            generated_caption_file = generated_vid_dir / model_name / abriged_name
+            
+            webvid_frames = extract_frames_to_list(str(webvid_file))
+            generated_caption_frames = extract_frames_to_list(str(generated_caption_file))
+            
+            print(f"Processing {caption}: {len(webvid_frames)} original frames, {len(generated_caption_frames)} generated frames")
+            
+            scale = int((len(webvid_frames) * len(generated_caption_frames) / 100) ** (0.5)) + 1
+            print(f"Using scale factor: {scale}")
+            
+            webvid_subset_frames = webvid_frames[::scale]
+            generated_caption_subset_frames = generated_caption_frames[::scale]
+            
+            all_webvid_subset_frames.append(webvid_subset_frames)
+            all_generated_caption_subset_frames.append(generated_caption_subset_frames)
+            
+            print(f"Subset frames: {len(webvid_subset_frames)} original, {len(generated_caption_subset_frames)} generated")
+        
+        print(f"Processing {len(name_url_dict)} videos for model {model_name}")
+        
+        all_webvid_video_crafter_subset_frames = zip(
+            list(name_url_dict.keys()),
+            all_webvid_subset_frames,
+            all_generated_caption_subset_frames
+        )
+        
+        all_webvid_video_crafter_subset_frames_copy = copy.deepcopy(all_webvid_video_crafter_subset_frames)
+        
+        # Save subset frames
+        subset_frames_path = out_dir / model_name / "all_webvid_subset_frames.pkl"
+        subset_frames_path.parent.mkdir(exist_ok=True, parents=True)
+        with open(subset_frames_path, "wb") as f:
+            pickle.dump(all_webvid_video_crafter_subset_frames_copy, f)
+        
+        # Process frame pairs and calculate distances
+        all_generated_caption_info = []
+        for name, webvid_subset_frames, generated_caption_subset_frames in all_webvid_video_crafter_subset_frames:
+            info = {
+                'name': name,
+                'num_webvid_subset_frames': len(webvid_subset_frames),
+                'num_model_subset_frames': len(generated_caption_subset_frames)
+            }
+            
+            cross_join_frames = itertools.product(webvid_subset_frames, generated_caption_subset_frames)
+            frame_pairs_to_distance = {}
+            
+            for idx, (orig, generated) in enumerate(cross_join_frames):
+                if idx % 10 == 0:
+                    print(f"Processing pair {idx}")
+                
+                distances = {
+                    "l2": cal_l2_distance(orig, generated),
+                    "clip_dist": cal_clip_embedding_distance(clip_model, preprocess, device, orig, generated),
+                    "clip_sim": cal_clip_embedding_sim(clip_model, preprocess, device, orig, generated)
+                }
+                
+                frame_pairs_to_distance[idx] = distances
+            
+            info['frame_pairs_to_distance'] = frame_pairs_to_distance
+            all_generated_caption_info.append(info)
+        
+        # Save results
+        info_path = out_dir / model_name / "all_webvid_info.pkl"
+        info_path.parent.mkdir(exist_ok=True, parents=True)
+        with open(info_path, "wb") as f:
+            pickle.dump(all_generated_caption_info, f)
 
-	df = pd.read_csv("")  ### TODO: Replace with https://huggingface.co/datasets/mmfm-trust/T2V/tree/main/privacy
-	name_url_dict = dict(zip(df["name"], df["video_id"]))
-
-	model_names = [str(t2v_model) for t2v_model in t2v_model_list]
-
-	for model_name in models_names:
-		all_webvid_subset_frames = []
-		all_generated_caption_subset_frames = []
-		for caption in name_url_dict.keys():
-
-			### TODO: Replace abriged_name with the mapping from caption to the random generated file name
-			abriged_name = abr_name(caption)
-
-			webvid_file = os.path.join(webvid_vid_dir, abriged_name)
-			generated_caption_file = os.path.join(generated_vid_dir, model_name, abriged_name)
-
-			webvid_frames = extract_frames_to_list(webvid_file)
-			generated_caption_frames = extract_frames_to_list(generated_caption_file)
-
-			print(len(webvid_frames), len(generated_caption_frames))
-
-			scale = int((len(webvid_frames) * len(generated_caption_frames) / 100 ) ** (0.5)) + 1
-			print(scale)
-
-			webvid_subset_frames = webvid_frames[::scale]
-			generated_caption_subset_frames = generated_caption_frames[::scale]
-			
-			all_webvid_subset_frames.append(webvid_subset_frames)
-			all_generated_caption_subset_frames.append(generated_caption_subset_frames)
-
-			print(len(webvid_subset_frames), len(generated_caption_subset_frames))
-
-		print("name_url_dict.keys(): ",len(list(name_url_dict.keys())))
-		print("all_webvid_subset_frames: ",len(all_webvid_subset_frames))
-		print("all_generated_caption_subset_frames): ",len(all_generated_caption_subset_frames))
-		all_webvid_video_crafter_subset_frames = zip(list(name_url_dict.keys()), all_webvid_subset_frames, all_generated_caption_subset_frames)
-
-		all_webvid_video_crafter_subset_frames_copy = copy.deepcopy(all_webvid_video_crafter_subset_frames)
-
-		if not os.path.exists(os.path.join(out_dir, model_name, "all_webvid_subset_frames.pkl")):
-			os.mkdir(os.path.join(out_dir, model_name, "all_webvid_subset_frames.pkl"))
-		with open(os.path.join(out_dir, model_name, "all_webvid_subset_frames.pkl"), "wb") as f:
-			pickle.dump(all_webvid_video_crafter_subset_frames_copy, f)
-
-		all_generated_caption_info = []
-		for name, webvid_subset_frames, generated_caption_subset_frames in all_webvid_video_crafter_subset_frames:
-			info = {}
-			info['name'] = name
-			info['num_webvid_subset_frames'] = len(webvid_subset_frames)
-			info['num_model_subset_frames'] = len(generated_caption_subset_frames)
-
-			cross_join_frames = itertools.product(webvid_subset_frames, generated_caption_subset_frames)
-
-			frame_pairs_to_distance = {}
-
-			idx = 0
-
-			for orig, generated in cross_join_frames:
-				if (idx % 10 == 0):
-					print(idx)
-
-			distances = {}
-			distances["l2"] = cal_l2_distance(orig, generated)
-			distances["clip_dist"] = cal_clip_embedding_distance(clip_model, preprocess, device, orig, generated)
-			distances["clip_sim"] = cal_clip_embedding_sim(clip_model, preprocess, device, orig, generated)
-
-			print(distances)
-
-			frame_pairs_to_distance[idx] = distances
-
-			idx+=1
-
-			info['frame_pairs_to_distance'] = frame_pairs_to_distance
-			print(len(frame_pairs_to_distance))
-
-			all_generated_caption_info.append(info)
-
-		if not os.path.exists(os.path.join(out_dir, model_name, "all_webvid_info.pkl")):
-			os.mkdir(os.path.join(out_dir, model_name, "all_webvid_info.pkl"))
-		with open(os.path.join(out_dir, model_name, "all_webvid_info.pkl"), "wb") as f:
-			pickle.dump(all_generated_caption_info, f)
+if __name__ == "__main__":
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--generated_vid_dir", type=Path, required=True)
+    parser.add_argument("--webvid_vid_dir", type=Path, required=True)
+    parser.add_argument("--out_dir", type=Path, required=True)
+    parser.add_argument("--dataset_url", type=str, default="https://huggingface.co/datasets/mmfm-trust/T2V/tree/main/privacy")
+    parser.add_argument("--models", nargs="+", type=T2VModelName, choices=t2v_model_list, default=None)
+    args = parser.parse_args()
+    
+    process_frame_crossjoins(
+        generated_vid_dir=args.generated_vid_dir,
+        webvid_vid_dir=args.webvid_vid_dir,
+        out_dir=args.out_dir,
+        dataset_url=args.dataset_url,
+        models=args.models,
+        device=args.device
+    ) 
