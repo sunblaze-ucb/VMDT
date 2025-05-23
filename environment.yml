@@ -1,4 +1,4 @@
-name: vmdt_final_trial
+name: vmdt
 channels:
   - xformers
   - pytorch
