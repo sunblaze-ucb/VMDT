@@ -1,4 +1,4 @@
-name: v2t_vmdt
+name: vmdt
 channels:
   - conda-forge
   - defaults
