@@ -48,7 +48,7 @@ Run text-to-video generation, evaluation, and scoring in one step using the `tex
 
 From the project root directory, invoke:
 ```bash
-python -m VMDT.hallucination/text_video.main --model_id <MODEL_ID> [--scenario <SCENARIO>] [--debug] [--do_not_evaluate]
+python -m VMDT.hallucination.text_video.main --model_id <MODEL_ID> [--scenario <SCENARIO>] [--debug] [--do_not_evaluate]
 ```
 
 - **MODEL_ID**: one of the supported model IDs (e.g., `VideoCrafter2`, `Vchitect2`, `OpenSora1.2`).
