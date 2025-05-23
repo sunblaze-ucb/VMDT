@@ -1,49 +1,101 @@
-# INSTALL
+# Video-to-Text Models for Privacy Evaluation
 
-Use the v2t.yml file to initialize a coda environment. Then each file contains a main that tests the correct execution of the code on a test video.
+This repository contains code for evaluating various video-to-text models on privacy-related tasks, including location identification (city, state, and ZIP code prediction).
 
-# Model list
+## Installation
 
-- Qwen2-VL (open source): https://github.com/QwenLM/Qwen2-VL 
+### Environment Setup
 
-- LLaVA-Video (open source): https://huggingface.co/lmms-lab/LLaVA-Video-72B-Qwen2 
+1. Create and activate conda environment using the provided yml file:
+```bash
+conda env create -f v2t.yml
+conda activate v2t
+```
 
-- DAMO-NLP-SG/VideoLLaMA2.1-7B-AV (open source): https://huggingface.co/DAMO-NLP-SG/VideoLLaMA2.1-7B-AV 
+### Model-Specific Dependencies
 
-- InternVL2.5 (open source): https://internvl.github.io/blog/2024-12-05-InternVL-2.5/
-
-- gpt-4o-2024-11-20 (closed source) + gpt-4o-audio-preview-2024-12-17 (for audio support) --> To run gpt4o.py code, please run the following
-
+For GPT-4o with audio support, install additional dependencies:
 ```bash
 pip install opencv-python
 pip install moviepy
 pip install openai
-
 pip3 install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cu124
 pip3 install flash-attn==2.7.2.post1
 ```
 
-# Execution
+## Usage
 
-## Running the models
-Check the TODOs in each execution file and add the relevant AWS credentials and API keys for Claude, GPT, Nova Lite & Pro
-```
-python3 claudesonnet.py
-python3 gpt4o.py
-python3 internvl2_5.py
-python3 llava_video.py
-python3 mini_cpm.py
-python3 nova_lite.py
-python3 nova_pro.py
-python3 qwen_vl2.py
-python3 video_llava.py
-python3 videollama2_1.py
+### Prerequisites
+
+Before running any model, ensure you have:
+1. Set up the required API keys:
+   - Claude API key
+   - GPT API key
+   - Nova Lite & Pro API keys
+2. Configured AWS credentials
+3. Updated TODOs in the execution files
+
+### Pipeline Execution
+
+The complete pipeline consists of two main steps:
+
+1. **Generate Model Predictions**
+```bash
+python3 v2t-privacy-gen.py \
+    --vids_dir /path/to/videos \
+    --output_dir /path/to/output \
+    --models model1 model2
 ```
 
-## Running the evaluation
-Check the TODOs in each execution file
-```
+This script:
+- Processes videos using specified models
+- Generates predictions for each model
+- Saves results in the output directory
+
+2. **Run Evaluations**
+
+The evaluation pipeline assesses model performance on three privacy-related tasks:
+
+a. City Prediction:
+```bash
 python3 v2t-city-eval.py
+```
+
+b. State Prediction:
+```bash
 python3 v2t-state-eval.py
+```
+
+c. ZIP Code Prediction:
+```bash
 python3 v2t-zipcode-eval.py
 ```
+
+Or run all evaluations at once:
+```bash
+python main.py \
+    --vids_dir /path/to/videos \
+    --output_dir /path/to/output \
+    --models model1 model2 \
+    --ground_truth_csv /path/to/ground_truth.csv
+```
+
+## Output
+
+Each evaluation generates:
+1. Detailed results in JSON format:
+   - `city_evaluation_results.json`
+   - `state_evaluation_results.json`
+   - `zipcode_evaluation_results.json`
+2. Summary statistics including:
+   - Accuracy rates
+   - Refusal rates
+   - Incorrect prediction rates
+
+## Notes
+
+- Ensure all API keys and credentials are properly configured before running the models
+- Some models may require specific GPU configurations
+- Check the TODOs in each execution file for model-specific requirements
+- The evaluation pipeline requires a ground truth CSV file with the correct format
+- The v2t-privacy-gen.py script must be run before running evaluations

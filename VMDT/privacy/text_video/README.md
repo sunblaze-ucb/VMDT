@@ -24,12 +24,78 @@ model weight
 python3 download.py
 ```
 
-## Execution
-Make sure to modify the TODOs in the below files as well as include the Nova Reel, Pika, and Luma API keys and AWS credentials.
-Run the following
-```
+## Configuration
+
+Before running the pipeline, you need to set up the following:
+
+1. API Keys:
+   - Nova Reel API key
+   - Pika API key
+   - Luma API key
+
+2. AWS Credentials:
+   - AWS Access Key ID
+   - AWS Secret Access Key
+   - AWS Region
+
+3. Update configuration files:
+   - Check and modify TODOs in the pipeline scripts
+   - Set appropriate paths and parameters
+
+## Usage
+
+### Video Generation Pipeline
+
+The pipeline consists of several steps:
+
+1. Generate videos:
+```bash
 python3 t2v-privacy-gen.py
+```
+
+2. Process frames and create cross-joins:
+```bash
 python3 t2v-privacy-process-frame-crossjoins.py
+```
+
+3. Calculate distances:
+```bash
 python3 t2v-privacy-calc-distances.py
+```
+
+4. Save similar frames:
+```bash
 python3 t2v-privacy-save-similar-frames.py
 ```
+
+### Evaluation Pipeline
+
+To evaluate the generated videos:
+
+```bash
+python main.py \
+    --vids_dir /path/to/videos \
+    --output_dir /path/to/output \
+    --models model1 model2 \
+    --ground_truth_csv /path/to/ground_truth.csv
+```
+
+This will:
+1. Process the videos using specified models
+2. Run evaluations for:
+   - City predictions
+   - State predictions
+   - ZIP code predictions
+3. Generate detailed evaluation reports
+4. Print a summary of results
+
+## Output
+
+The pipeline generates several types of output:
+
+1. Generated videos in the specified output directory
+2. Evaluation results for each model:
+   - `city_evaluation_results.json`
+   - `state_evaluation_results.json`
+   - `zipcode_evaluation_results.json`
+3. Summary statistics and metrics
