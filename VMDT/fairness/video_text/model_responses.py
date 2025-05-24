@@ -123,8 +123,8 @@ def model_responses(model_name, scenarios=['stereotype','decision_making','factu
         Path(f"{HERE}/vid/fairness/vid/overkill")
     ]
 
-    if any(not folder.exists() or not any(folder.iterdir()) for folder in folders):
-        video_download()
+    #if any(not folder.exists() or not any(folder.iterdir()) for folder in folders):
+    #    video_download()
 
     if 'stereotype' in scenarios:
         stereotype(model_name)
