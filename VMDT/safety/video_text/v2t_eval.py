@@ -3,9 +3,9 @@ import asyncio
 from pathlib import Path
 
 import torch
+from datasets import load_dataset
 from dotenv import load_dotenv
 from openai import AsyncOpenAI
-from datasets import load_dataset
 from pydantic import TypeAdapter
 from tenacity import RetryError, retry, stop_after_attempt
 from tqdm import trange
@@ -216,7 +216,9 @@ async def eval_one_model(
         save_json(results, results_out_path)
 
 
-def load_data(data_dir: Path) -> list[V2TData]:
+def load_data(data_dir: Path, splits=None) -> list[V2TData]:
+    if splits is None:
+        splits = ["genai"]
     data = load_dataset(
         "parquet",
         data_files={
@@ -225,7 +227,7 @@ def load_data(data_dir: Path) -> list[V2TData]:
         },
     )
     ret = []
-    for split in ["real", "genai"]:
+    for split in splits:
         for itm in data[split]:
             ret.append(
                 V2TData(

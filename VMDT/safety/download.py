@@ -8,9 +8,9 @@ DATA_DIR = SAFETY_ROOT / "data"
 
 # download videos and prompts
 snapshot_download(
-    repo_id="Zhaorun/SafeWatch-Bench",
+    repo_id="EchoRaven/safewatch-genai",
     repo_type="dataset",
-    allow_patterns=["real/videos/**", "genai/videos/**"],
+    allow_patterns=["Safewatch-Bench-Genai/**"],
     local_dir=str(DATA_DIR / "safewatch")
 )
 
@@ -24,7 +24,7 @@ snapshot_download(
 with open(SAFETY_ROOT / "video_mapping.json") as f:
     video_mapping = json.load(f)
 
-(DATA_DIR / "v2t_data/vid").mkdir(exist_ok=True)
+(DATA_DIR / "v2t_data/safety/vid").mkdir(exist_ok=True)
 
 for k, v in video_mapping.items():
     from_path = DATA_DIR / v
